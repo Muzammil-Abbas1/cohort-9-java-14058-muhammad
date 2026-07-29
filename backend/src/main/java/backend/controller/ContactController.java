@@ -4,11 +4,10 @@ import backend.dto.ContactRequest;
 import backend.entity.Contact;
 import backend.service.ContactService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/contacts")
@@ -16,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 public class ContactController {
 
     private final ContactService contactService;
+
+    // ================= CREATE CONTACT =================
 
     @PostMapping
     public ResponseEntity<?> createContact(@RequestBody ContactRequest request) {
@@ -32,34 +33,98 @@ public class ContactController {
 
         }
     }
+
+    // ================= GET ALL CONTACTS =================
+
     @GetMapping
-public ResponseEntity<?> getContacts(Pageable pageable) {
+    public ResponseEntity<?> getContacts(Pageable pageable) {
 
-    try {
+        try {
 
-        Page<Contact> contacts = contactService.getContacts(pageable);
+            Page<Contact> contacts = contactService.getContacts(pageable);
 
-        return ResponseEntity.ok(contacts);
+            return ResponseEntity.ok(contacts);
 
-    } catch (RuntimeException e) {
+        } catch (RuntimeException e) {
 
-        return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
 
+        }
     }
-}
-@GetMapping("/{id}")
-public ResponseEntity<?> getContactById(@PathVariable Long id) {
 
-    try {
+    // ================= SEARCH CONTACTS =================
 
-        Contact contact = contactService.getContactById(id);
+    @GetMapping("/search")
+    public ResponseEntity<?> searchContacts(
+            @RequestParam String name,
+            Pageable pageable) {
 
-        return ResponseEntity.ok(contact);
+        try {
 
-    } catch (RuntimeException e) {
+            Page<Contact> contacts = contactService.searchContacts(name, pageable);
 
-        return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.ok(contacts);
 
+        } catch (RuntimeException e) {
+
+            return ResponseEntity.badRequest().body(e.getMessage());
+
+        }
     }
-}
+
+    // ================= GET CONTACT BY ID =================
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getContactById(@PathVariable Long id) {
+
+        try {
+
+            Contact contact = contactService.getContactById(id);
+
+            return ResponseEntity.ok(contact);
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity.badRequest().body(e.getMessage());
+
+        }
+    }
+
+    // ================= UPDATE CONTACT =================
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateContact(
+            @PathVariable Long id,
+            @RequestBody ContactRequest request) {
+
+        try {
+
+            Contact updated = contactService.updateContact(id, request);
+
+            return ResponseEntity.ok(updated);
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity.badRequest().body(e.getMessage());
+
+        }
+    }
+
+    // ================= DELETE CONTACT =================
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteContact(@PathVariable Long id) {
+
+        try {
+
+            contactService.deleteContact(id);
+
+            return ResponseEntity.ok("Contact deleted successfully");
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity.badRequest().body(e.getMessage());
+
+        }
+    }
 }
