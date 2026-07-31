@@ -5,6 +5,8 @@ import backend.entity.Contact;
 import backend.entity.ContactEmail;
 import backend.entity.ContactPhone;
 import backend.entity.User;
+import backend.exception.ResourceNotFoundException;
+import backend.exception.UnauthorizedException;
 import backend.repository.ContactRepository;
 import backend.repository.UserRepository;
 import backend.security.AuthUtil;
@@ -25,13 +27,16 @@ public class ContactService {
     private final UserRepository userRepository;
     private final AuthUtil authUtil;
 
+    // ================= GET CURRENT USER =================
+
     private User getCurrentUser() {
 
         String identifier = authUtil.getCurrentUserIdentifier();
 
         return userRepository.findByEmail(identifier)
                 .or(() -> userRepository.findByPhone(identifier))
-                .orElseThrow(() -> new RuntimeException("Logged-in user not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Logged-in user not found"));
     }
 
     // ================= CREATE CONTACT =================
@@ -98,10 +103,15 @@ public class ContactService {
         User user = getCurrentUser();
 
         Contact contact = contactRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Contact not found"));
+                .orElseThrow(() -> {
+    System.out.println("Throwing: " + ResourceNotFoundException.class.getName());
+    return new ResourceNotFoundException("Contact not found");
+});
 
         if (!contact.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("You are not authorized to view this contact");
+            System.out.println("Throwing: " + UnauthorizedException.class.getName());
+throw new UnauthorizedException(
+        "You are not authorized to view this contact");
         }
 
         return contact;

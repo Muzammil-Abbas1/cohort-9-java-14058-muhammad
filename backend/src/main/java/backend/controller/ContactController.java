@@ -21,17 +21,9 @@ public class ContactController {
     @PostMapping
     public ResponseEntity<?> createContact(@RequestBody ContactRequest request) {
 
-        try {
+        Contact saved = contactService.createContact(request);
 
-            Contact saved = contactService.createContact(request);
-
-            return ResponseEntity.ok(saved);
-
-        } catch (RuntimeException e) {
-
-            return ResponseEntity.badRequest().body(e.getMessage());
-
-        }
+        return ResponseEntity.ok(saved);
     }
 
     // ================= GET ALL CONTACTS =================
@@ -39,17 +31,9 @@ public class ContactController {
     @GetMapping
     public ResponseEntity<?> getContacts(Pageable pageable) {
 
-        try {
+        Page<Contact> contacts = contactService.getContacts(pageable);
 
-            Page<Contact> contacts = contactService.getContacts(pageable);
-
-            return ResponseEntity.ok(contacts);
-
-        } catch (RuntimeException e) {
-
-            return ResponseEntity.badRequest().body(e.getMessage());
-
-        }
+        return ResponseEntity.ok(contacts);
     }
 
     // ================= SEARCH CONTACTS =================
@@ -59,17 +43,9 @@ public class ContactController {
             @RequestParam String name,
             Pageable pageable) {
 
-        try {
+        Page<Contact> contacts = contactService.searchContacts(name, pageable);
 
-            Page<Contact> contacts = contactService.searchContacts(name, pageable);
-
-            return ResponseEntity.ok(contacts);
-
-        } catch (RuntimeException e) {
-
-            return ResponseEntity.badRequest().body(e.getMessage());
-
-        }
+        return ResponseEntity.ok(contacts);
     }
 
     // ================= GET CONTACT BY ID =================
@@ -77,17 +53,9 @@ public class ContactController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getContactById(@PathVariable Long id) {
 
-        try {
+        Contact contact = contactService.getContactById(id);
 
-            Contact contact = contactService.getContactById(id);
-
-            return ResponseEntity.ok(contact);
-
-        } catch (RuntimeException e) {
-
-            return ResponseEntity.badRequest().body(e.getMessage());
-
-        }
+        return ResponseEntity.ok(contact);
     }
 
     // ================= UPDATE CONTACT =================
@@ -97,17 +65,9 @@ public class ContactController {
             @PathVariable Long id,
             @RequestBody ContactRequest request) {
 
-        try {
+        Contact updated = contactService.updateContact(id, request);
 
-            Contact updated = contactService.updateContact(id, request);
-
-            return ResponseEntity.ok(updated);
-
-        } catch (RuntimeException e) {
-
-            return ResponseEntity.badRequest().body(e.getMessage());
-
-        }
+        return ResponseEntity.ok(updated);
     }
 
     // ================= DELETE CONTACT =================
@@ -115,16 +75,8 @@ public class ContactController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteContact(@PathVariable Long id) {
 
-        try {
+        contactService.deleteContact(id);
 
-            contactService.deleteContact(id);
-
-            return ResponseEntity.ok("Contact deleted successfully");
-
-        } catch (RuntimeException e) {
-
-            return ResponseEntity.badRequest().body(e.getMessage());
-
-        }
+        return ResponseEntity.ok("Contact deleted successfully");
     }
 }
