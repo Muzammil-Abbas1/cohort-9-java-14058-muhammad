@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/contacts")
@@ -19,7 +20,7 @@ public class ContactController {
     // ================= CREATE CONTACT =================
 
     @PostMapping
-    public ResponseEntity<?> createContact(@RequestBody ContactRequest request) {
+    public ResponseEntity<?> createContact(@Valid @RequestBody ContactRequest request) {
 
         Contact saved = contactService.createContact(request);
 
@@ -63,7 +64,7 @@ public class ContactController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateContact(
             @PathVariable Long id,
-            @RequestBody ContactRequest request) {
+           @Valid @RequestBody ContactRequest request) {
 
         Contact updated = contactService.updateContact(id, request);
 

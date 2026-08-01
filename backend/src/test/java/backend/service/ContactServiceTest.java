@@ -5,7 +5,6 @@ import backend.entity.User;
 import backend.exception.ResourceNotFoundException;
 import backend.exception.UnauthorizedException;
 import backend.repository.ContactRepository;
-import backend.repository.UserRepository;
 import backend.security.AuthUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,9 +25,6 @@ class ContactServiceTest {
     private ContactRepository contactRepository;
 
     @Mock
-    private UserRepository userRepository;
-
-    @Mock
     private AuthUtil authUtil;
 
     @InjectMocks
@@ -43,11 +39,8 @@ class ContactServiceTest {
         currentUser.setId(1L);
         currentUser.setEmail("ali@example.com");
 
-        when(authUtil.getCurrentUserIdentifier())
-                .thenReturn("ali@example.com");
-
-        when(userRepository.findByEmail("ali@example.com"))
-                .thenReturn(Optional.of(currentUser));
+        when(authUtil.getCurrentUser())
+                .thenReturn(currentUser);
     }
 
     @Test
@@ -109,6 +102,6 @@ class ContactServiceTest {
 
         contactService.deleteContact(5L);
 
-        verify(contactRepository).delete(contact);
+        verify(contactRepository, times(1)).delete(contact);
     }
 }

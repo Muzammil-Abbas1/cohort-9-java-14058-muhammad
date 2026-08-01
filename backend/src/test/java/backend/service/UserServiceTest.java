@@ -97,7 +97,7 @@ class UserServiceTest {
         loginRequest.setEmailOrPhone("ali@example.com");
         loginRequest.setPassword("password123");
 
-        when(userRepository.findByEmail("ali@example.com"))
+        when(userRepository.findByEmailOrPhone("ali@example.com"))
                 .thenReturn(Optional.of(user));
 
         when(passwordEncoder.matches("password123", "encodedPassword"))
@@ -122,7 +122,7 @@ class UserServiceTest {
         loginRequest.setEmailOrPhone("ali@example.com");
         loginRequest.setPassword("wrongPassword");
 
-        when(userRepository.findByEmail("ali@example.com"))
+        when(userRepository.findByEmailOrPhone("ali@example.com"))
                 .thenReturn(Optional.of(user));
 
         when(passwordEncoder.matches("wrongPassword", "encodedPassword"))

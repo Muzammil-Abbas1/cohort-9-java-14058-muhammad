@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,7 +21,8 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(
+        @Valid @RequestBody RegisterRequest request) {
 
         User user = userService.register(request);
 
@@ -28,7 +30,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(
+        @Valid @RequestBody LoginRequest request) {
 
         String token = userService.login(request);
 
@@ -45,7 +48,7 @@ public class AuthController {
 
     @PutMapping("/change-password")
     public ResponseEntity<?> changePassword(
-            @RequestBody ChangePasswordRequest request) {
+        @Valid @RequestBody ChangePasswordRequest request) {
 
         userService.changePassword(request);
 

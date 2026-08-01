@@ -8,7 +8,7 @@ import backend.entity.User;
 import backend.exception.ResourceNotFoundException;
 import backend.exception.UnauthorizedException;
 import backend.repository.ContactRepository;
-import backend.repository.UserRepository;
+
 import backend.security.AuthUtil;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -21,29 +21,18 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ContactService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ContactService.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(ContactService.class);
 
     private final ContactRepository contactRepository;
-    private final UserRepository userRepository;
+  
     private final AuthUtil authUtil;
-
-    // ================= GET CURRENT USER =================
-
-    private User getCurrentUser() {
-
-        String identifier = authUtil.getCurrentUserIdentifier();
-
-        return userRepository.findByEmail(identifier)
-                .or(() -> userRepository.findByPhone(identifier))
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Logged-in user not found"));
-    }
 
     // ================= CREATE CONTACT =================
 
     public Contact createContact(ContactRequest request) {
 
-        User user = getCurrentUser();
+        User user = authUtil.getCurrentUser();
 
         Contact contact = new Contact();
         contact.setFirstName(request.getFirstName());
@@ -91,7 +80,7 @@ public class ContactService {
 
     public Page<Contact> getContacts(Pageable pageable) {
 
-        User user = getCurrentUser();
+        User user = authUtil.getCurrentUser();
 
         return contactRepository.findByUserId(user.getId(), pageable);
     }
@@ -100,18 +89,15 @@ public class ContactService {
 
     public Contact getContactById(Long id) {
 
-        User user = getCurrentUser();
+        User user = authUtil.getCurrentUser();
 
         Contact contact = contactRepository.findById(id)
-                .orElseThrow(() -> {
-    System.out.println("Throwing: " + ResourceNotFoundException.class.getName());
-    return new ResourceNotFoundException("Contact not found");
-});
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Contact not found"));
 
         if (!contact.getUser().getId().equals(user.getId())) {
-            System.out.println("Throwing: " + UnauthorizedException.class.getName());
-throw new UnauthorizedException(
-        "You are not authorized to view this contact");
+            throw new UnauthorizedException(
+                    "You are not authorized to view this contact");
         }
 
         return contact;
@@ -121,7 +107,7 @@ throw new UnauthorizedException(
 
     public Page<Contact> searchContacts(String name, Pageable pageable) {
 
-        User user = getCurrentUser();
+        User user = authUtil.getCurrentUser();
 
         return contactRepository.searchByName(user.getId(), name, pageable);
     }
@@ -129,6 +115,8 @@ throw new UnauthorizedException(
     // ================= UPDATE CONTACT =================
 
     public Contact updateContact(Long id, ContactRequest request) {
+
+        User user = authUtil.getCurrentUser();
 
         Contact contact = getContactById(id);
 
@@ -169,7 +157,7 @@ throw new UnauthorizedException(
 
         logger.info("Contact updated: id={} by user={}",
                 id,
-                getCurrentUser().getEmail());
+                user.getEmail());
 
         return updated;
     }
@@ -178,12 +166,14 @@ throw new UnauthorizedException(
 
     public void deleteContact(Long id) {
 
+        User user = authUtil.getCurrentUser();
+
         Contact contact = getContactById(id);
 
         contactRepository.delete(contact);
 
         logger.info("Contact deleted: id={} by user={}",
                 id,
-                getCurrentUser().getEmail());
+                user.getEmail());
     }
 }
