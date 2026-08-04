@@ -103,4 +103,13 @@ public class GlobalExceptionHandler {
                         "Something went wrong. Please try again later."
                 ));
     }
+
+     @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<?> handleAuthentication(AuthenticationException e) {
+
+     logger.warn("Authentication failed: {}", e.getMessage());
+
+     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(Map.of("error", e.getMessage()));
+    }
 }

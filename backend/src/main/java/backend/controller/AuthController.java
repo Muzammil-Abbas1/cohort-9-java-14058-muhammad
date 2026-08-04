@@ -3,15 +3,23 @@ package backend.controller;
 import backend.dto.ChangePasswordRequest;
 import backend.dto.LoginRequest;
 import backend.dto.RegisterRequest;
+import backend.dto.UserResponse;
 import backend.entity.User;
+import backend.exception.ResourceNotFoundException;
 import backend.service.UserService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import jakarta.validation.Valid;
+
+import backend.exception.BadRequestException;
+import backend.exception.ResourceNotFoundException;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -21,22 +29,41 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(
+    public ResponseEntity<UserResponse> register(
         @Valid @RequestBody RegisterRequest request) {
 
         User user = userService.register(request);
 
-        return ResponseEntity.ok(user);
+        UserResponse response = new UserResponse(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getPhone()
+        );
+
+        return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(
+   @PostMapping("/login")
+public ResponseEntity<?> login(
         @Valid @RequestBody LoginRequest request) {
 
-        String token = userService.login(request);
+      try {
 
-        return ResponseEntity.ok(Map.of("token", token));
-    }
+          String token = userService.login(request);
+
+          return ResponseEntity.ok(Map.of("token", token));
+
+      } catch (ResourceNotFoundException | BadRequestException ex) {
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of(
+                        "error",
+                        "Invalid email or password"
+                ));
+      }
+     }
 
     @GetMapping("/test-protected")
     public ResponseEntity<?> testProtected(Authentication authentication) {
