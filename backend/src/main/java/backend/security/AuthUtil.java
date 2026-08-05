@@ -9,6 +9,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+
+import backend.exception.AuthenticationException;
+
 @Component
 @RequiredArgsConstructor
 public class AuthUtil {
@@ -24,18 +27,24 @@ public class AuthUtil {
                 || !authentication.isAuthenticated()
                 || "anonymousUser".equals(authentication.getPrincipal())) {
 
-            throw new UnauthorizedException("User is not authenticated");
+                throw new AuthenticationException("User is not authenticated");
         }
 
         return authentication.getName();
     }
 
-    public User getCurrentUser() {
+     public User getCurrentUser() {
 
-        String identifier = getCurrentUserIdentifier();
+      Long userId;
+  
+       try {
+            userId = Long.valueOf(getCurrentUserIdentifier());
+           } catch (NumberFormatException e) {
+             throw new AuthenticationException("Invalid authentication token");
+           }
 
-        return userRepository.findByEmailOrPhone(identifier)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Logged-in user not found"));
-    }
+           return userRepository.findById(userId)
+                 .orElseThrow(() ->
+                    new ResourceNotFoundException("Logged-in user not found"));
+}
 }
