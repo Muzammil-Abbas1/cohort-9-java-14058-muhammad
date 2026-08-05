@@ -6,6 +6,8 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -25,7 +27,8 @@ public class User {
 
     @Column(unique = true)
     private String phone;
-
+    
+    @JsonIgnore
     private String password;
 
     private LocalDateTime createdAt;

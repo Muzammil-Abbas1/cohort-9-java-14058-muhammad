@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import backend.security.AuthUtil;
+
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +27,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final AuthUtil authUtil;
 
     // ================= REGISTER =================
 
@@ -90,16 +93,14 @@ public class UserService {
 
     public void changePassword(ChangePasswordRequest request) {
 
-        User user = userRepository.findByEmailOrPhone(request.getEmailOrPhone())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found"));
+         User user = authUtil.getCurrentUser();
 
         if (!passwordEncoder.matches(
                 request.getOldPassword(),
                 user.getPassword())) {
 
-            logger.warn("Failed password change attempt for user: {}",
-                    request.getEmailOrPhone());
+           logger.warn("Failed password change attempt for user: {}",
+                user.getEmail() != null ? user.getEmail() : user.getPhone());
 
             throw new BadRequestException("Old password is incorrect");
         }
@@ -109,7 +110,7 @@ public class UserService {
 
         userRepository.save(user);
 
-        logger.info("Password changed successfully for user: {}",
-                request.getEmailOrPhone());
-    }
+         logger.info("Password changed successfully for user: {}",
+             user.getEmail() != null ? user.getEmail() : user.getPhone());
+    }  
 }
