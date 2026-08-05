@@ -79,15 +79,11 @@ public class UserService {
             throw new BadRequestException("Invalid password");
         }
 
-        String subject = user.getEmail() != null
-                ? user.getEmail()
-                : user.getPhone();
-
         logger.info("User logged in: {}",
-                request.getEmailOrPhone());
+        request.getEmailOrPhone());
 
-        return jwtUtil.generateToken(subject);
-    }
+        return jwtUtil.generateToken(user.getId().toString());
+     }
 
     // ================= CHANGE PASSWORD =================
 

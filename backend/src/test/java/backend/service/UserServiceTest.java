@@ -89,9 +89,10 @@ class UserServiceTest {
     @Test
     void login_shouldReturnToken_whenCredentialsAreCorrect() {
 
-        User user = new User();
-        user.setEmail("ali@example.com");
-        user.setPassword("encodedPassword");
+       User user = new User();
+      user.setId(1L);
+      user.setEmail("ali@example.com");
+      user.setPassword("encodedPassword");
 
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmailOrPhone("ali@example.com");
@@ -103,8 +104,8 @@ class UserServiceTest {
         when(passwordEncoder.matches("password123", "encodedPassword"))
                 .thenReturn(true);
 
-        when(jwtUtil.generateToken("ali@example.com"))
-                .thenReturn("fake-jwt-token");
+       when(jwtUtil.generateToken(user.getId().toString()))
+        .thenReturn("fake-jwt-token");
 
         String token = userService.login(loginRequest);
 
@@ -115,6 +116,7 @@ class UserServiceTest {
     void login_shouldThrowException_whenPasswordIsWrong() {
 
         User user = new User();
+        user.setId(1L);
         user.setEmail("ali@example.com");
         user.setPassword("encodedPassword");
 
