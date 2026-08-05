@@ -110,6 +110,6 @@ public class GlobalExceptionHandler {
      logger.warn("Authentication failed: {}", e.getMessage());
 
      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .body(Map.of("error", e.getMessage()));
+            .body(Map.of("error", "Authentication required"));
     }
 }
