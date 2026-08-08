@@ -95,8 +95,8 @@ public class UserService {
                 request.getOldPassword(),
                 user.getPassword())) {
 
-           logger.warn("Failed password change attempt for user: {}",
-                user.getEmail() != null ? user.getEmail() : user.getPhone());
+               logger.warn("Failed password change attempt for user id={}",
+                user.getId());
 
             throw new BadRequestException("Old password is incorrect");
         }
@@ -106,7 +106,7 @@ public class UserService {
 
         userRepository.save(user);
 
-         logger.info("Password changed successfully for user: {}",
-             user.getEmail() != null ? user.getEmail() : user.getPhone());
+           logger.info("Password changed successfully for user id={}",
+            user.getId());
     }  
 }
