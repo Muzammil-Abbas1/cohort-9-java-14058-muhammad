@@ -18,8 +18,8 @@ import java.util.Map;
 import jakarta.validation.Valid;
 
 import backend.exception.BadRequestException;
-import backend.exception.ResourceNotFoundException;
-import org.springframework.http.HttpStatus;
+
+
 
 @RestController
 @RequestMapping("/api/auth")
@@ -45,40 +45,43 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-   @PostMapping("/login")
-public ResponseEntity<?> login(
+  @PostMapping("/login")
+public ResponseEntity<Map<String, String>> login(
         @Valid @RequestBody LoginRequest request) {
 
-      try {
+    try {
 
-          String token = userService.login(request);
-
-          return ResponseEntity.ok(Map.of("token", token));
-
-      } catch (ResourceNotFoundException | BadRequestException ex) {
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of(
-                        "error",
-                        "Invalid email or password"
-                ));
-      }
-     }
-
-    @GetMapping("/test-protected")
-    public ResponseEntity<?> testProtected(Authentication authentication) {
+        String token = userService.login(request);
 
         return ResponseEntity.ok(
-                "Hello, " + authentication.getName() + "! Your token works."
+                Map.of("token", token)
         );
-    }
 
-    @PutMapping("/change-password")
-    public ResponseEntity<?> changePassword(
+    } catch (ResourceNotFoundException | BadRequestException ex) {
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(
+                        Map.of(
+                                "error",
+                                "Invalid email or password"
+                        )
+                );
+    }
+}
+
+      @GetMapping("/test-protected")
+       public ResponseEntity<String> testProtected(Authentication authentication) {
+             return ResponseEntity.ok(
+            "Hello, " + authentication.getName() + "! Your token works."
+       );
+       }
+
+      @PutMapping("/change-password")
+       public ResponseEntity<String> changePassword(
         @Valid @RequestBody ChangePasswordRequest request) {
 
-        userService.changePassword(request);
+      userService.changePassword(request);
 
-        return ResponseEntity.ok("Password changed successfully");
-    }
+      return ResponseEntity.ok("Password changed successfully");
+     }
 }

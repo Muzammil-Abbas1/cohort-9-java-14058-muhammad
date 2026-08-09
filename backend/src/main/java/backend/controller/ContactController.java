@@ -3,12 +3,12 @@ package backend.controller;
 import backend.dto.ContactRequest;
 import backend.entity.Contact;
 import backend.service.ContactService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/contacts")
@@ -20,7 +20,8 @@ public class ContactController {
     // ================= CREATE CONTACT =================
 
     @PostMapping
-    public ResponseEntity<?> createContact(@Valid @RequestBody ContactRequest request) {
+    public ResponseEntity<Contact> createContact(
+            @Valid @RequestBody ContactRequest request) {
 
         Contact saved = contactService.createContact(request);
 
@@ -30,7 +31,7 @@ public class ContactController {
     // ================= GET ALL CONTACTS =================
 
     @GetMapping
-    public ResponseEntity<?> getContacts(Pageable pageable) {
+    public ResponseEntity<Page<Contact>> getContacts(Pageable pageable) {
 
         Page<Contact> contacts = contactService.getContacts(pageable);
 
@@ -40,11 +41,12 @@ public class ContactController {
     // ================= SEARCH CONTACTS =================
 
     @GetMapping("/search")
-    public ResponseEntity<?> searchContacts(
+    public ResponseEntity<Page<Contact>> searchContacts(
             @RequestParam String name,
             Pageable pageable) {
 
-        Page<Contact> contacts = contactService.searchContacts(name, pageable);
+        Page<Contact> contacts =
+                contactService.searchContacts(name, pageable);
 
         return ResponseEntity.ok(contacts);
     }
@@ -52,7 +54,8 @@ public class ContactController {
     // ================= GET CONTACT BY ID =================
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getContactById(@PathVariable Long id) {
+    public ResponseEntity<Contact> getContactById(
+            @PathVariable Long id) {
 
         Contact contact = contactService.getContactById(id);
 
@@ -62,11 +65,12 @@ public class ContactController {
     // ================= UPDATE CONTACT =================
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateContact(
+    public ResponseEntity<Contact> updateContact(
             @PathVariable Long id,
-           @Valid @RequestBody ContactRequest request) {
+            @Valid @RequestBody ContactRequest request) {
 
-        Contact updated = contactService.updateContact(id, request);
+        Contact updated =
+                contactService.updateContact(id, request);
 
         return ResponseEntity.ok(updated);
     }
@@ -74,7 +78,8 @@ public class ContactController {
     // ================= DELETE CONTACT =================
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteContact(@PathVariable Long id) {
+    public ResponseEntity<String> deleteContact(
+            @PathVariable Long id) {
 
         contactService.deleteContact(id);
 
