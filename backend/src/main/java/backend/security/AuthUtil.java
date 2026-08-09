@@ -2,7 +2,6 @@ package backend.security;
 
 import backend.entity.User;
 import backend.exception.ResourceNotFoundException;
-import backend.exception.UnauthorizedException;
 import backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
