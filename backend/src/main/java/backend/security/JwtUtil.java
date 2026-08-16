@@ -19,22 +19,28 @@ public class JwtUtil {
 
     private SecretKey key;
 
-    private static final long EXPIRATION_TIME = 10L * 60 * 60 * 1000; // 10 hours
+    private static final long EXPIRATION_TIME = 10L * 60 * 60 * 1000;
 
     @PostConstruct
     public void init() {
-        key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        key = Keys.hmacShaKeyFor(
+                secret.getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     public String generateToken(String subject) {
 
         Instant now = Instant.now();
-        Instant expiration = now.plusMillis(EXPIRATION_TIME);
+
+        Date issuedAt = Date.from(now);
+        Date expiration = Date.from(
+                now.plusMillis(EXPIRATION_TIME)
+        );
 
         return Jwts.builder()
                 .subject(subject)
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(expiration))
+                .issuedAt(issuedAt)
+                .expiration(expiration)
                 .signWith(key)
                 .compact();
     }

@@ -69,6 +69,17 @@ public ResponseEntity<Map<String, String>> login(
     }
 }
 
+@GetMapping("/me")
+public ResponseEntity<UserResponse> getCurrentUser() {
+
+    UserResponse profile =
+            userService.getCurrentUserProfile();
+
+    return ResponseEntity.ok(profile);
+}
+
+
+
       @GetMapping("/test-protected")
        public ResponseEntity<String> testProtected(Authentication authentication) {
              return ResponseEntity.ok(

@@ -3,6 +3,7 @@ package backend.service;
 import backend.dto.ChangePasswordRequest;
 import backend.dto.LoginRequest;
 import backend.dto.RegisterRequest;
+import backend.dto.UserResponse;
 import backend.entity.User;
 import backend.exception.BadRequestException;
 import backend.exception.ConflictException;
@@ -84,6 +85,22 @@ public class UserService {
 
         return jwtUtil.generateToken(user.getId().toString());
      }
+
+    // ================= CURRENT USER =================
+
+    public UserResponse getCurrentUserProfile() {
+
+        User user = authUtil.getCurrentUser();
+
+        return new UserResponse(
+            user.getId(),
+            user.getFirstName(),
+            user.getLastName(),
+            user.getEmail(),
+            user.getPhone()
+       );
+    }
+
 
     // ================= CHANGE PASSWORD =================
 
