@@ -1,6 +1,7 @@
 package backend.config;
 
 import backend.security.JwtFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -79,6 +80,15 @@ public class SecurityConfig {
                 )
 
                 .csrf(csrf -> csrf.spa())
+
+                .exceptionHandling(exceptions ->
+                        exceptions.authenticationEntryPoint(
+                                (request, response, authException) ->
+                                        response.sendError(
+                                                HttpServletResponse.SC_UNAUTHORIZED
+                                        )
+                        )
+                )
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
