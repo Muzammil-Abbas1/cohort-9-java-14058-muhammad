@@ -2,6 +2,7 @@ package backend.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -22,33 +23,48 @@ public class JwtFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
     }
 
-   @Override
-protected void doFilterInternal(
-        HttpServletRequest request,
-        HttpServletResponse response,
-        FilterChain filterChain)
-        throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain)
+            throws ServletException, IOException {
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        String token = getTokenFromCookie(request);
 
-            String token = authHeader.substring(7);
+        if (token != null && jwtUtil.isTokenValid(token)) {
 
-            if (jwtUtil.isTokenValid(token)) {
+            String subject = jwtUtil.extractSubject(token);
 
-                String subject = jwtUtil.extractSubject(token);
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            subject,
+                            null,
+                            Collections.emptyList()
+                    );
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                subject,
-                                null,
-                                Collections.emptyList()
-                        );
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+            SecurityContextHolder.getContext()
+                    .setAuthentication(authentication);
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private String getTokenFromCookie(HttpServletRequest request) {
+
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies == null) {
+            return null;
+        }
+
+        for (Cookie cookie : cookies) {
+
+            if ("access_token".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+
+        return null;
     }
 }
