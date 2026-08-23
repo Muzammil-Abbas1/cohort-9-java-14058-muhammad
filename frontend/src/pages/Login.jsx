@@ -27,9 +27,7 @@ function Login() {
         setLoading(true);
 
         try {
-                 await api.post("/auth/login", form);
-
-                 navigate("/dashboard");
+            await api.post("/auth/login", form);
 
             navigate("/dashboard");
         } catch (err) {
