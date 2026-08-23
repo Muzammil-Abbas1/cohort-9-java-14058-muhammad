@@ -71,6 +71,27 @@ class UserServiceTest {
     }
 
     @Test
+    void register_shouldTreatBlankPhoneAsNull_andSkipDuplicateCheck() {
+
+        registerRequest.setPhone("   ");
+
+        when(userRepository.findByEmail("ali@example.com"))
+                .thenReturn(Optional.empty());
+
+        when(passwordEncoder.encode("password123"))
+                .thenReturn("encodedPassword");
+
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userService.register(registerRequest);
+
+        assertNull(result.getPhone());
+
+        verify(userRepository, never()).findByPhone(any());
+    }
+
+    @Test
     void register_shouldThrowException_whenEmailAlreadyExists() {
 
         when(userRepository.findByEmail("ali@example.com"))

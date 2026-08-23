@@ -34,17 +34,20 @@ public class UserService {
 
     public User register(RegisterRequest request) {
 
-        if (request.getEmail() == null && request.getPhone() == null) {
+        String email = normalizeBlank(request.getEmail());
+        String phone = normalizeBlank(request.getPhone());
+
+        if (email == null && phone == null) {
             throw new BadRequestException("Email or phone is required");
         }
 
-        if (request.getEmail() != null &&
-                userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (email != null &&
+                userRepository.findByEmail(email).isPresent()) {
             throw new ConflictException("Email already registered");
         }
 
-        if (request.getPhone() != null &&
-                userRepository.findByPhone(request.getPhone()).isPresent()) {
+        if (phone != null &&
+                userRepository.findByPhone(phone).isPresent()) {
             throw new ConflictException("Phone already registered");
         }
 
@@ -52,16 +55,18 @@ public class UserService {
 
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
-        user.setEmail(request.getEmail());
-        user.setPhone(request.getPhone());
+        user.setEmail(email);
+        user.setPhone(phone);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         logger.info("New user registered: {}",
-                request.getEmail() != null
-                        ? request.getEmail()
-                        : request.getPhone());
+                email != null ? email : phone);
 
         return userRepository.save(user);
+    }
+
+    private String normalizeBlank(String value) {
+        return (value == null || value.isBlank()) ? null : value;
     }
 
     // ================= LOGIN =================
