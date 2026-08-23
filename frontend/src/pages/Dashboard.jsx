@@ -32,17 +32,16 @@ function Dashboard() {
     try {
         await api.delete(`/contacts/${id}`);
 
-        setContacts((currentContacts) =>
-            currentContacts.filter(
-                (contact) => contact.id !== id
-            )
-        );
+        await loadContacts();
 
     } catch (err) {
-        console.error("Failed to delete contact:", err);
+        console.error(
+            "Failed to delete contact:",
+            err.response?.status,
+            err.code
+        );
 
         if (err.response?.status === 401) {
-            localStorage.removeItem("token");
             navigate("/login");
             return;
         }
@@ -52,29 +51,39 @@ function Dashboard() {
             "Failed to delete contact."
         );
     }
-};
+    };
 
 
 
-    const loadContacts = async () => {
+    const loadContacts = async (signal) => {
     try {
         setLoading(true);
         setError("");
 
         const endpoint = searchTerm.trim()
-            ? `/contacts/search?name=${encodeURIComponent(searchTerm)}&page=${page}&size=9`
-            : `/contacts?page=${page}&size=9`;
+            ? `/contacts/search?name=${encodeURIComponent(searchTerm)}&page=${page}&size=2`
+            : `/contacts?page=${page}&size=2`;
 
-        const response = await api.get(endpoint);
+        const response = await api.get(endpoint, {
+            signal,
+        });
 
         setContacts(response.data.content || []);
         setTotalPages(response.data.totalPages || 0);
         setTotalElements(response.data.totalElements || 0);
+
     } catch (err) {
-        console.error("Failed to load contacts:", err);
+        if (err.name === "CanceledError" || err.code === "ERR_CANCELED") {
+            return;
+        }
+
+        console.error(
+            "Failed to load contacts:",
+            err.response?.status,
+            err.code
+        );
 
         if (err.response?.status === 401) {
-            localStorage.removeItem("token");
             navigate("/login");
             return;
         }
@@ -84,7 +93,9 @@ function Dashboard() {
             "Failed to load contacts."
         );
     } finally {
-        setLoading(false);
+        if (!signal?.aborted) {
+            setLoading(false);
+        }
     }
     };
     
@@ -94,17 +105,38 @@ function Dashboard() {
     };
 
     useEffect(() => {
-    const delay = setTimeout(() => {
-        loadContacts();
-    }, 400);
+    const controller = new AbortController();
 
-    return () => clearTimeout(delay);
+      const delay = setTimeout(() => {
+        loadContacts(controller.signal);
+      }, 400);
+
+      return () => {
+        clearTimeout(delay);
+        controller.abort();
+      };
    }, [searchTerm, page]);
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        navigate("/login");
-    };
+   useEffect(() => {
+    if (totalPages > 0 && page >= totalPages) {
+        setPage(totalPages - 1);
+    }
+   }, [page, totalPages]);
+
+
+    const handleLogout = async () => {
+    try {
+        await api.post("/auth/logout");
+    } catch (err) {
+        console.error(
+            "Logout failed:",
+            err.response?.status,
+            err.code
+        );
+      } finally {
+          navigate("/login");
+      }
+   };
 
     return (
         <div className="container-fluid">

@@ -220,18 +220,21 @@ function EditContact() {
 
             const responseData = err.response?.data;
 
-            if (typeof responseData === "object") {
-                const messages = Object.values(responseData)
-                    .filter(Boolean)
-                    .join(", ");
+         if (
+           responseData &&
+           typeof responseData === "object"
+          ) {
+             const messages = Object.values(responseData)
+             .filter(Boolean)
+             .join(", ");
 
-                setError(
-                    messages ||
-                    "Failed to update contact."
-                );
-            } else {
-                setError("Failed to update contact.");
-            }
+           setError(
+             messages ||
+             "Failed to update contact."
+         );
+         } else {
+                 setError("Failed to update contact.");
+           }
         } finally {
             setSaving(false);
         }

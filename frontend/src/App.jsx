@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import AddContact from "./pages/AddContact";
 import EditContact from "./pages/EditContact";
 import Profile from "./pages/Profile";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
     return (
@@ -29,31 +30,50 @@ function App() {
                     element={<Register />}
                 />
 
-                {/* Dashboard */}
+                {/* Protected Dashboard */}
                 <Route
                     path="/dashboard"
-                    element={<Dashboard />}
+                    element={
+                        <ProtectedRoute>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    }
                 />
-                {/* Profile */}
-                <Route
-                     path="/profile"
-                   element={<Profile />}
-                  />
 
-                {/* Contacts */}
+                {/* Protected Profile */}
+                <Route
+                    path="/profile"
+                    element={
+                        <ProtectedRoute>
+                            <Profile />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Protected Add Contact */}
                 <Route
                     path="/contacts/new"
-                    element={<AddContact />}
+                    element={
+                        <ProtectedRoute>
+                            <AddContact />
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Protected Edit Contact */}
+                <Route
+                    path="/contacts/edit/:id"
+                    element={
+                        <ProtectedRoute>
+                            <EditContact />
+                        </ProtectedRoute>
+                    }
                 />
 
                 {/* Unknown route */}
                 <Route
                     path="*"
                     element={<Navigate to="/dashboard" replace />}
-                />
-                <Route
-                   path="/contacts/edit/:id"
-                   element={<EditContact />}
                 />
 
             </Routes>

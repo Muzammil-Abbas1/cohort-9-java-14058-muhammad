@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
@@ -20,6 +20,9 @@ function Profile() {
     const [passwordSuccess, setPasswordSuccess] = useState("");
     const [saving, setSaving] = useState(false);
 
+    const modalRef = useRef(null);
+    const changePasswordButtonRef = useRef(null);
+
     // ================= LOAD PROFILE =================
 
     const loadProfile = async () => {
@@ -32,10 +35,13 @@ function Profile() {
             setUser(response.data);
 
         } catch (err) {
-            console.error("Failed to load profile:", err);
+            console.error(
+                "Failed to load profile:",
+                err.code,
+                err.response?.status
+            );
 
             if (err.response?.status === 401) {
-                localStorage.removeItem("token");
                 navigate("/login");
                 return;
             }
@@ -56,9 +62,18 @@ function Profile() {
 
     // ================= LOGOUT =================
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        navigate("/login");
+    const handleLogout = async () => {
+        try {
+            await api.post("/auth/logout");
+        } catch (err) {
+            console.error(
+                "Logout failed:",
+                err.code,
+                err.response?.status
+            );
+        } finally {
+            navigate("/login");
+        }
     };
 
     // ================= PASSWORD FORM =================
@@ -86,6 +101,66 @@ function Profile() {
             setShowModal(false);
         }
     };
+
+    // ================= MODAL ACCESSIBILITY =================
+
+    useEffect(() => {
+        if (!showModal) {
+            return;
+        }
+
+        const modal = modalRef.current;
+
+        if (!modal) {
+            return;
+        }
+
+        const previouslyFocused = document.activeElement;
+
+        const focusableElements = modal.querySelectorAll(
+            'button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])'
+        );
+
+        const firstFocusable = focusableElements[0];
+        const lastFocusable =
+            focusableElements[focusableElements.length - 1];
+
+        firstFocusable?.focus();
+
+        const handleKeyDown = (event) => {
+            if (event.key === "Escape") {
+                closeModal();
+                return;
+            }
+
+            if (event.key === "Tab") {
+                if (
+                    event.shiftKey &&
+                    document.activeElement === firstFocusable
+                ) {
+                    event.preventDefault();
+                    lastFocusable?.focus();
+                } else if (
+                    !event.shiftKey &&
+                    document.activeElement === lastFocusable
+                ) {
+                    event.preventDefault();
+                    firstFocusable?.focus();
+                }
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.removeEventListener(
+                "keydown",
+                handleKeyDown
+            );
+
+            previouslyFocused?.focus();
+        };
+    }, [showModal]);
 
     // ================= CHANGE PASSWORD =================
 
@@ -118,7 +193,8 @@ function Profile() {
         } catch (err) {
             console.error(
                 "Failed to change password:",
-                err
+                err.code,
+                err.response?.status
             );
 
             const responseData = err.response?.data;
@@ -127,7 +203,6 @@ function Profile() {
                 err.response?.status === 401 &&
                 !err.config?.url?.includes("change-password")
             ) {
-                localStorage.removeItem("token");
                 navigate("/login");
                 return;
             }
@@ -268,6 +343,7 @@ function Profile() {
                             </div>
 
                             <button
+                                ref={changePasswordButtonRef}
                                 className="btn btn-primary me-2"
                                 onClick={openModal}
                             >
@@ -294,7 +370,11 @@ function Profile() {
             {showModal && (
 
                 <div
+                    ref={modalRef}
                     className="modal d-block"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="change-password-title"
                     style={{
                         backgroundColor:
                             "rgba(0,0,0,0.5)"
@@ -313,13 +393,17 @@ function Profile() {
 
                             <div className="modal-header">
 
-                                <h5 className="modal-title">
+                                <h5
+                                    className="modal-title"
+                                    id="change-password-title"
+                                >
                                     Change Password
                                 </h5>
 
                                 <button
                                     type="button"
                                     className="btn-close"
+                                    aria-label="Close"
                                     onClick={closeModal}
                                     disabled={saving}
                                 />
@@ -333,24 +417,34 @@ function Profile() {
                                 <div className="modal-body">
 
                                     {passwordError && (
-                                        <div className="alert alert-danger">
+                                        <div
+                                            className="alert alert-danger"
+                                            role="alert"
+                                        >
                                             {passwordError}
                                         </div>
                                     )}
 
                                     {passwordSuccess && (
-                                        <div className="alert alert-success">
+                                        <div
+                                            className="alert alert-success"
+                                            role="alert"
+                                        >
                                             {passwordSuccess}
                                         </div>
                                     )}
 
                                     <div className="mb-3">
 
-                                        <label className="form-label">
+                                        <label
+                                            className="form-label"
+                                            htmlFor="old-password"
+                                        >
                                             Old Password
                                         </label>
 
                                         <input
+                                            id="old-password"
                                             type="password"
                                             name="oldPassword"
                                             className="form-control"
@@ -368,11 +462,15 @@ function Profile() {
 
                                     <div className="mb-3">
 
-                                        <label className="form-label">
+                                        <label
+                                            className="form-label"
+                                            htmlFor="new-password"
+                                        >
                                             New Password
                                         </label>
 
                                         <input
+                                            id="new-password"
                                             type="password"
                                             name="newPassword"
                                             className="form-control"

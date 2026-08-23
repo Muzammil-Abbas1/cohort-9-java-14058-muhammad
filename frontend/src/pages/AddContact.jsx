@@ -98,21 +98,37 @@ function AddContact() {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+    e.preventDefault();
 
-        setError("");
-        setLoading(true);
+    setError("");
+    setLoading(true);
 
-        try {
-            const payload = {
-                ...form,
-                emails: form.emails.filter(
-                    (item) => item.email.trim() !== ""
-                ),
-                phones: form.phones.filter(
-                    (item) => item.phone.trim() !== ""
-                ),
-            };
+    const hasEmail = form.emails.some(
+        (item) => item.email.trim() !== ""
+    );
+
+    const hasPhone = form.phones.some(
+        (item) => item.phone.trim() !== ""
+    );
+
+    if (!hasEmail && !hasPhone) {
+        setError(
+            "Please provide at least an email address or phone number."
+        );
+        setLoading(false);
+        return;
+    }
+
+    try {
+        const payload = {
+            ...form,
+            emails: form.emails.filter(
+                (item) => item.email.trim() !== ""
+            ),
+            phones: form.phones.filter(
+                (item) => item.phone.trim() !== ""
+            ),
+        };
 
             await api.post("/contacts", payload);
 
@@ -128,20 +144,23 @@ function AddContact() {
 
             const responseData = err.response?.data;
 
-            if (typeof responseData === "object") {
-                const messages = Object.values(responseData)
-                    .filter(Boolean)
-                    .join(", ");
+            if (
+                 responseData &&
+               typeof responseData === "object"
+           ) {
+         const messages = Object.values(responseData)
+           .filter(Boolean)
+           .join(", ");
 
-                setError(
-                    messages ||
-                    "Failed to create contact."
-                );
-            } else {
-                setError(
-                    "Failed to create contact."
-                );
-            }
+         setError(
+            messages ||
+             "Failed to create contact."
+           );
+          } else {
+         setError(
+           "Failed to create contact."
+         );
+        }
         } finally {
             setLoading(false);
         }
