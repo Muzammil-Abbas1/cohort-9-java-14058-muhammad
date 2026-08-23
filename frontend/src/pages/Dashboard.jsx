@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import ContactFormModal from "../components/ContactFormModal";
 
 function Dashboard() {
     const navigate = useNavigate();
@@ -14,24 +15,59 @@ function Dashboard() {
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
 
+    const [showFormModal, setShowFormModal] = useState(false);
+    const [editingContact, setEditingContact] = useState(null);
+
+    const [contactToDelete, setContactToDelete] = useState(null);
+    const [deleting, setDeleting] = useState(false);
+
     const handleAddContact = () => {
-        navigate("/contacts/new");
+        setEditingContact(null);
+        setShowFormModal(true);
+    };
+
+    const handleEditContact = (contact) => {
+        setEditingContact(contact);
+        setShowFormModal(true);
+    };
+
+    const closeFormModal = () => {
+        if (!showFormModal) {
+            return;
+        }
+        setShowFormModal(false);
+        setEditingContact(null);
+    };
+
+    const handleContactSaved = async () => {
+        setShowFormModal(false);
+        setEditingContact(null);
+        await loadContacts();
     };
 
    {/*=======================deleting contact=====================*/}
 
-    const handleDelete = async (id) => {
-    const confirmed = window.confirm(
-        "Are you sure you want to delete this contact?"
-    );
+    const handleDeleteClick = (contact) => {
+        setContactToDelete(contact);
+    };
 
-    if (!confirmed) {
+    const closeDeleteModal = () => {
+        if (!deleting) {
+            setContactToDelete(null);
+        }
+    };
+
+    const confirmDelete = async () => {
+    if (!contactToDelete) {
         return;
     }
 
-    try {
-        await api.delete(`/contacts/${id}`);
+    setDeleting(true);
 
+    try {
+        await api.delete(`/contacts/${contactToDelete.id}`);
+
+        setContactToDelete(null);
         await loadContacts();
 
     } catch (err) {
@@ -50,6 +86,9 @@ function Dashboard() {
             err.response?.data?.error ||
             "Failed to delete contact."
         );
+        setContactToDelete(null);
+    } finally {
+        setDeleting(false);
     }
     };
 
@@ -61,8 +100,8 @@ function Dashboard() {
         setError("");
 
         const endpoint = searchTerm.trim()
-            ? `/contacts/search?name=${encodeURIComponent(searchTerm)}&page=${page}&size=2`
-            : `/contacts?page=${page}&size=2`;
+            ? `/contacts/search?name=${encodeURIComponent(searchTerm)}&page=${page}&size=9`
+            : `/contacts?page=${page}&size=9`;
 
         const response = await api.get(endpoint, {
             signal,
@@ -347,14 +386,14 @@ function Dashboard() {
 
                                             <button
                                              className="btn btn-sm btn-outline-primary me-2"
-                                             onClick={() => navigate(`/contacts/edit/${contact.id}`)}
+                                             onClick={() => handleEditContact(contact)}
                                              >
                                                Edit
                                                </button>
 
                                             <button
                                            className="btn btn-sm btn-outline-danger"
-                                            onClick={() => handleDelete(contact.id)}
+                                            onClick={() => handleDeleteClick(contact)}
                                               >
                                              Delete
                                              </button>
@@ -400,6 +439,93 @@ function Dashboard() {
           )}
 
             </div>
+
+            {/* ================= ADD / EDIT CONTACT MODAL ================= */}
+
+            <ContactFormModal
+                show={showFormModal}
+                contact={editingContact}
+                onClose={closeFormModal}
+                onSaved={handleContactSaved}
+            />
+
+            {/* ================= DELETE CONFIRMATION MODAL ================= */}
+
+            {contactToDelete && (
+
+                <div
+                    className="modal d-block"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="delete-contact-title"
+                    style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+                    onClick={closeDeleteModal}
+                >
+
+                    <div
+                        className="modal-dialog modal-dialog-centered"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+
+                        <div className="modal-content">
+
+                            <div className="modal-header">
+
+                                <h5
+                                    className="modal-title"
+                                    id="delete-contact-title"
+                                >
+                                    Delete Contact
+                                </h5>
+
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    aria-label="Close"
+                                    onClick={closeDeleteModal}
+                                    disabled={deleting}
+                                />
+
+                            </div>
+
+                            <div className="modal-body">
+                                Are you sure you want to delete{" "}
+                                <strong>
+                                    {contactToDelete.firstName}{" "}
+                                    {contactToDelete.lastName}
+                                </strong>
+                                ? This action cannot be undone.
+                            </div>
+
+                            <div className="modal-footer">
+
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={closeDeleteModal}
+                                    disabled={deleting}
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="btn btn-danger"
+                                    onClick={confirmDelete}
+                                    disabled={deleting}
+                                >
+                                    {deleting ? "Deleting..." : "Delete"}
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
 
         </div>
     );

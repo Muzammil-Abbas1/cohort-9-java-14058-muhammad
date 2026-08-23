@@ -3,8 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import AddContact from "./pages/AddContact";
-import EditContact from "./pages/EditContact";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -46,26 +44,6 @@ function App() {
                     element={
                         <ProtectedRoute>
                             <Profile />
-                        </ProtectedRoute>
-                    }
-                />
-
-                {/* Protected Add Contact */}
-                <Route
-                    path="/contacts/new"
-                    element={
-                        <ProtectedRoute>
-                            <AddContact />
-                        </ProtectedRoute>
-                    }
-                />
-
-                {/* Protected Edit Contact */}
-                <Route
-                    path="/contacts/edit/:id"
-                    element={
-                        <ProtectedRoute>
-                            <EditContact />
                         </ProtectedRoute>
                     }
                 />
