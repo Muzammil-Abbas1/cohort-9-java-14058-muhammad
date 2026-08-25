@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
+import ThemeToggle from "../components/ThemeToggle";
 
 function Login() {
     const navigate = useNavigate();
@@ -42,6 +43,9 @@ function Login() {
 
     return (
         <div className="container mt-5">
+            <div className="d-flex justify-content-end mb-2">
+                <ThemeToggle variant="secondary" />
+            </div>
             <div className="row justify-content-center">
                 <div className="col-md-5">
                     <div className="card shadow">

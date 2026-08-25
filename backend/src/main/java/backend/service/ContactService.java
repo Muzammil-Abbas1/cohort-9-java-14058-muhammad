@@ -162,6 +162,23 @@ public class ContactService {
         return updated;
     }
 
+    // ================= TOGGLE FAVORITE =================
+
+    public Contact toggleFavorite(Long id) {
+
+        Contact contact = getContactById(id);
+
+        contact.setFavorite(!contact.isFavorite());
+
+        Contact updated = contactRepository.save(contact);
+
+        logger.info("Contact favorite toggled: id={} favorite={}",
+                id,
+                updated.isFavorite());
+
+        return updated;
+    }
+
     // ================= DELETE CONTACT =================
 
     public void deleteContact(Long id) {

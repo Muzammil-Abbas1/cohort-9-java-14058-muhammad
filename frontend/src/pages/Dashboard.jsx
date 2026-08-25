@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import ContactFormModal from "../components/ContactFormModal";
+import ThemeToggle from "../components/ThemeToggle";
+import SkeletonCard from "../components/SkeletonCard";
+import { useToast } from "../context/useToast.js";
 
 function Dashboard() {
     const navigate = useNavigate();
+    const { showToast } = useToast();
 
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -14,6 +18,9 @@ function Dashboard() {
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
+
+    const [sortField, setSortField] = useState("createdAt,desc");
+    const [favoritesFirst, setFavoritesFirst] = useState(false);
 
     const [showFormModal, setShowFormModal] = useState(false);
     const [editingContact, setEditingContact] = useState(null);
@@ -40,9 +47,48 @@ function Dashboard() {
     };
 
     const handleContactSaved = async () => {
+        const wasEditing = Boolean(editingContact);
+
         setShowFormModal(false);
         setEditingContact(null);
+
+        showToast(
+            wasEditing
+                ? "Contact updated successfully"
+                : "Contact added successfully"
+        );
+
         await loadContacts();
+    };
+
+    const handleToggleFavorite = async (contact) => {
+        try {
+            const response = await api.patch(
+                `/contacts/${contact.id}/favorite`
+            );
+
+            setContacts((current) =>
+                current.map((c) =>
+                    c.id === contact.id ? response.data : c
+                )
+            );
+        } catch (err) {
+            console.error(
+                "Failed to toggle favorite:",
+                err.response?.status,
+                err.code
+            );
+
+            if (err.response?.status === 401) {
+                navigate("/login");
+                return;
+            }
+
+            setError(
+                err.response?.data?.error ||
+                "Failed to update favorite."
+            );
+        }
     };
 
    {/*=======================deleting contact=====================*/}
@@ -68,6 +114,7 @@ function Dashboard() {
         await api.delete(`/contacts/${contactToDelete.id}`);
 
         setContactToDelete(null);
+        showToast("Contact deleted successfully");
         await loadContacts();
 
     } catch (err) {
@@ -94,14 +141,28 @@ function Dashboard() {
 
 
 
+    const buildSortParams = () => {
+        const params = new URLSearchParams();
+
+        if (favoritesFirst) {
+            params.append("sort", "favorite,desc");
+        }
+
+        params.append("sort", sortField);
+
+        return params.toString();
+    };
+
     const loadContacts = async (signal) => {
     try {
         setLoading(true);
         setError("");
 
+        const sortParams = buildSortParams();
+
         const endpoint = searchTerm.trim()
-            ? `/contacts/search?name=${encodeURIComponent(searchTerm)}&page=${page}&size=9`
-            : `/contacts?page=${page}&size=9`;
+            ? `/contacts/search?name=${encodeURIComponent(searchTerm)}&page=${page}&size=9&${sortParams}`
+            : `/contacts?page=${page}&size=9&${sortParams}`;
 
         const response = await api.get(endpoint, {
             signal,
@@ -143,6 +204,16 @@ function Dashboard() {
     setPage(0);
     };
 
+    const handleSortChange = (e) => {
+        setSortField(e.target.value);
+        setPage(0);
+    };
+
+    const handleFavoritesFirstChange = (e) => {
+        setFavoritesFirst(e.target.checked);
+        setPage(0);
+    };
+
     useEffect(() => {
     const controller = new AbortController();
 
@@ -154,7 +225,7 @@ function Dashboard() {
         clearTimeout(delay);
         controller.abort();
       };
-   }, [searchTerm, page]);
+   }, [searchTerm, page, sortField, favoritesFirst]);
 
    useEffect(() => {
     if (totalPages > 0 && page >= totalPages) {
@@ -188,6 +259,8 @@ function Dashboard() {
                 </span>
 
                 <div className="ms-auto d-flex gap-2">
+
+                       <ThemeToggle />
 
                        <button
                        className="btn btn-outline-light"
@@ -228,14 +301,49 @@ function Dashboard() {
                     </button>
 
                 </div>
-                <div className="mb-4">
-                  <input
-                    type="text"
-                     className="form-control"
-                      placeholder="Search contacts by first or last name..."
-                      value={searchTerm}
-                   onChange={handleSearchChange}
-                 />
+                <div className="row g-2 mb-4">
+
+                    <div className="col-md-5">
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Search contacts by first or last name..."
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                        />
+                    </div>
+
+                    <div className="col-md-4">
+                        <select
+                            className="form-select"
+                            value={sortField}
+                            onChange={handleSortChange}
+                            aria-label="Sort contacts"
+                        >
+                            <option value="createdAt,desc">Recently Added</option>
+                            <option value="firstName,asc">First Name (A-Z)</option>
+                            <option value="lastName,asc">Last Name (A-Z)</option>
+                        </select>
+                    </div>
+
+                    <div className="col-md-3 d-flex align-items-center">
+                        <div className="form-check">
+                            <input
+                                type="checkbox"
+                                className="form-check-input"
+                                id="favorites-first"
+                                checked={favoritesFirst}
+                                onChange={handleFavoritesFirstChange}
+                            />
+                            <label
+                                className="form-check-label"
+                                htmlFor="favorites-first"
+                            >
+                                Favorites first
+                            </label>
+                        </div>
+                    </div>
+
               </div>
 
                 {/* ================= ERROR ================= */}
@@ -249,21 +357,14 @@ function Dashboard() {
                 {/* ================= LOADING ================= */}
 
                 {loading && (
-                    <div className="text-center mt-5">
-
-                        <div
-                            className="spinner-border text-primary"
-                            role="status"
-                        >
-                            <span className="visually-hidden">
-                                Loading...
-                            </span>
-                        </div>
-
-                        <p className="mt-2">
+                    <div className="row" aria-busy="true" aria-live="polite">
+                        <span className="visually-hidden">
                             Loading contacts...
-                        </p>
+                        </span>
 
+                        {Array.from({ length: 6 }).map((_, index) => (
+                            <SkeletonCard key={index} />
+                        ))}
                     </div>
                 )}
 
@@ -315,10 +416,34 @@ function Dashboard() {
 
                                     <div className="card-body">
 
-                                        <h5 className="card-title">
-                                            {contact.firstName}{" "}
-                                            {contact.lastName}
-                                        </h5>
+                                        <div className="d-flex justify-content-between align-items-start">
+
+                                            <h5 className="card-title">
+                                                {contact.firstName}{" "}
+                                                {contact.lastName}
+                                            </h5>
+
+                                            <button
+                                                type="button"
+                                                className="btn btn-sm p-0 border-0 bg-transparent fs-5"
+                                                onClick={() =>
+                                                    handleToggleFavorite(contact)
+                                                }
+                                                aria-label={
+                                                    contact.favorite
+                                                        ? "Remove from favorites"
+                                                        : "Add to favorites"
+                                                }
+                                                title={
+                                                    contact.favorite
+                                                        ? "Remove from favorites"
+                                                        : "Add to favorites"
+                                                }
+                                            >
+                                                {contact.favorite ? "⭐" : "☆"}
+                                            </button>
+
+                                        </div>
 
                                         {contact.title && (
                                             <p className="text-muted">

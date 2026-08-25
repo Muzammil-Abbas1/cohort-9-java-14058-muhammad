@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import ThemeToggle from "../components/ThemeToggle";
 
 function Profile() {
     const navigate = useNavigate();
@@ -242,6 +243,8 @@ function Profile() {
 
                 <div className="ms-auto d-flex gap-2">
 
+                    <ThemeToggle />
+
                     <button
                         className="btn btn-outline-light"
                         onClick={() => navigate("/dashboard")}
@@ -278,20 +281,30 @@ function Profile() {
                 )}
 
                 {loading && (
-                    <div className="text-center mt-5">
+                    <div className="card shadow-sm" aria-busy="true" aria-live="polite">
 
-                        <div
-                            className="spinner-border text-primary"
-                            role="status"
-                        >
+                        <div className="card-body p-4">
+
                             <span className="visually-hidden">
-                                Loading...
+                                Loading profile...
                             </span>
-                        </div>
 
-                        <p className="mt-2">
-                            Loading profile...
-                        </p>
+                            {["First Name", "Last Name", "Email", "Phone"].map((label) => (
+                                <div className="mb-3" key={label}>
+                                    <strong className="text-muted">{label}</strong>
+                                    <span
+                                        className="skeleton skeleton-text mt-1"
+                                        style={{ width: "45%", height: "1.1rem" }}
+                                    />
+                                </div>
+                            ))}
+
+                            <div className="d-flex gap-2">
+                                <span className="skeleton" style={{ width: "9.5rem", height: "2.375rem", borderRadius: "0.375rem" }} />
+                                <span className="skeleton" style={{ width: "6rem", height: "2.375rem", borderRadius: "0.375rem" }} />
+                            </div>
+
+                        </div>
 
                     </div>
                 )}

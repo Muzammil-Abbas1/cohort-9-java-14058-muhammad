@@ -123,6 +123,23 @@ class ContactControllerTest {
     }
 
     @Test
+    void toggleFavorite_shouldReturnUpdatedContact() {
+        Long id = 1L;
+        Contact updatedContact = new Contact();
+
+        when(contactService.toggleFavorite(id))
+                .thenReturn(updatedContact);
+
+        ResponseEntity<Contact> response =
+                contactController.toggleFavorite(id);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(updatedContact, response.getBody());
+
+        verify(contactService).toggleFavorite(id);
+    }
+
+    @Test
     void deleteContact_shouldReturnSuccessMessage() {
         Long id = 1L;
 

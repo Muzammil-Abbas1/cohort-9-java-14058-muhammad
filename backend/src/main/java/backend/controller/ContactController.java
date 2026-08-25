@@ -75,6 +75,17 @@ public class ContactController {
         return ResponseEntity.ok(updated);
     }
 
+    // ================= TOGGLE FAVORITE =================
+
+    @PatchMapping("/{id}/favorite")
+    public ResponseEntity<Contact> toggleFavorite(
+            @PathVariable Long id) {
+
+        Contact updated = contactService.toggleFavorite(id);
+
+        return ResponseEntity.ok(updated);
+    }
+
     // ================= DELETE CONTACT =================
 
     @DeleteMapping("/{id}")

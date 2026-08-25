@@ -91,6 +91,45 @@ class ContactServiceTest {
     }
 
     @Test
+    void toggleFavorite_shouldFlipFavoriteFlag_whenUserOwnsContact() {
+
+        Contact contact = new Contact();
+        contact.setId(5L);
+        contact.setUser(currentUser);
+        contact.setFavorite(false);
+
+        when(contactRepository.findById(5L))
+                .thenReturn(Optional.of(contact));
+
+        when(contactRepository.save(any(Contact.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        Contact result = contactService.toggleFavorite(5L);
+
+        assertTrue(result.isFavorite());
+        verify(contactRepository).save(contact);
+    }
+
+    @Test
+    void toggleFavorite_shouldThrowUnauthorized_whenContactBelongsToAnotherUser() {
+
+        User anotherUser = new User();
+        anotherUser.setId(2L);
+
+        Contact contact = new Contact();
+        contact.setId(5L);
+        contact.setUser(anotherUser);
+
+        when(contactRepository.findById(5L))
+                .thenReturn(Optional.of(contact));
+
+        assertThrows(
+                UnauthorizedException.class,
+                () -> contactService.toggleFavorite(5L)
+        );
+    }
+
+    @Test
     void deleteContact_shouldCallRepositoryDelete_whenUserOwnsContact() {
 
         Contact contact = new Contact();

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
+import ThemeToggle from "../components/ThemeToggle";
 
 function Register() {
     const navigate = useNavigate();
@@ -60,6 +61,9 @@ function Register() {
 
     return (
         <div className="container mt-5">
+            <div className="d-flex justify-content-end mb-2">
+                <ThemeToggle variant="secondary" />
+            </div>
             <div className="row justify-content-center">
                 <div className="col-md-6">
                     <div className="card shadow">

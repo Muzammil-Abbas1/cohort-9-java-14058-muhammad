@@ -3,6 +3,7 @@ package backend.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -24,6 +25,10 @@ public class Contact {
     private String lastName;
 
     private String title;
+
+    @ColumnDefault("false")
+    @Column(nullable = false)
+    private boolean favorite = false;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
