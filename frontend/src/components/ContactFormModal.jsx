@@ -268,7 +268,7 @@ function ContactFormModal({ show, contact, onClose, onSaved }) {
     return (
         <div
             ref={modalRef}
-            className="modal d-block"
+            className="modal d-block modal-animate-backdrop"
             role="dialog"
             aria-modal="true"
             aria-labelledby="contact-form-title"
@@ -276,7 +276,7 @@ function ContactFormModal({ show, contact, onClose, onSaved }) {
             onClick={handleBackdropClick}
         >
             <div
-                className="modal-dialog modal-dialog-centered modal-lg"
+                className="modal-dialog modal-dialog-centered modal-lg modal-animate-dialog"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="modal-content">

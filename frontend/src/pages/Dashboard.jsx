@@ -373,10 +373,10 @@ function Dashboard() {
             {/* ================= CONTACT LIST ================= */}
 
             {!loading && contacts.length > 0 && groupedContacts.map((group) => (
-                <div key={group.letter || "all"} className="mb-3">
+                <div key={group.letter || "all"} className="mb-3 content-fade-in">
 
                     {group.letter && (
-                        <div className="text-primary fw-bold small mb-1 ps-1">
+                        <div className="text-primary fw-bold small mb-1 text-end pe-1">
                             {group.letter}
                         </div>
                     )}

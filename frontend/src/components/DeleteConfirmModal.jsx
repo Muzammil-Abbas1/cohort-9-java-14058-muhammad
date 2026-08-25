@@ -5,7 +5,7 @@ function DeleteConfirmModal({ contact, deleting, onCancel, onConfirm }) {
 
     return (
         <div
-            className="modal d-block"
+            className="modal d-block modal-animate-backdrop"
             role="dialog"
             aria-modal="true"
             aria-labelledby="delete-contact-title"
@@ -13,7 +13,7 @@ function DeleteConfirmModal({ contact, deleting, onCancel, onConfirm }) {
             onClick={onCancel}
         >
             <div
-                className="modal-dialog modal-dialog-centered"
+                className="modal-dialog modal-dialog-centered modal-animate-dialog"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="modal-content">

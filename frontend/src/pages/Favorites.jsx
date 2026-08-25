@@ -192,7 +192,7 @@ function Favorites() {
             )}
 
             {!loading && contacts.length > 0 && (
-                <div className="row">
+                <div className="row content-fade-in">
                     {contacts.map((contact) => (
                         <FavoriteContactCard
                             key={contact.id}

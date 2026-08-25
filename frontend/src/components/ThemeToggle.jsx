@@ -6,7 +6,7 @@ function ThemeToggle({ variant = "light" }) {
     return (
         <button
             type="button"
-            className={`btn btn-outline-${variant}`}
+            className={`btn btn-outline-${variant} theme-toggle-btn`}
             onClick={toggleTheme}
             aria-label={
                 theme === "dark"
@@ -19,7 +19,9 @@ function ThemeToggle({ variant = "light" }) {
                     : "Switch to dark mode"
             }
         >
-            {theme === "dark" ? "☀️" : "🌙"}
+            <span key={theme} className="theme-toggle-icon">
+                {theme === "dark" ? "☀️" : "🌙"}
+            </span>
         </button>
     );
 }

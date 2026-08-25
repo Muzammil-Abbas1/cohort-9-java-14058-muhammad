@@ -54,7 +54,7 @@ function ContactDetailModal({ contact, onClose, onEdit, onDelete, onToggleFavori
     return (
         <div
             ref={modalRef}
-            className="modal d-block"
+            className="modal d-block modal-animate-backdrop"
             role="dialog"
             aria-modal="true"
             aria-labelledby="contact-detail-title"
@@ -62,7 +62,7 @@ function ContactDetailModal({ contact, onClose, onEdit, onDelete, onToggleFavori
             onClick={onClose}
         >
             <div
-                className="modal-dialog modal-dialog-centered modal-fullscreen-sm-down"
+                className="modal-dialog modal-dialog-centered modal-fullscreen-sm-down modal-animate-dialog"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="modal-content">
@@ -86,7 +86,7 @@ function ContactDetailModal({ contact, onClose, onEdit, onDelete, onToggleFavori
                         <div className="d-flex gap-1 flex-shrink-0">
                             <button
                                 type="button"
-                                className="btn btn-link text-decoration-none"
+                                className="btn btn-link text-decoration-none icon-action-btn"
                                 onClick={() => onEdit(contact)}
                                 aria-label="Edit contact"
                                 title="Edit contact"
@@ -96,7 +96,7 @@ function ContactDetailModal({ contact, onClose, onEdit, onDelete, onToggleFavori
 
                             <button
                                 type="button"
-                                className="btn btn-link text-decoration-none text-danger"
+                                className="btn btn-link text-decoration-none text-danger icon-action-btn"
                                 onClick={() => onDelete(contact)}
                                 aria-label="Delete contact"
                                 title="Delete contact"
