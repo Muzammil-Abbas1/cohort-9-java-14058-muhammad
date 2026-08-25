@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
-import ThemeToggle from "../components/ThemeToggle";
+import AuthLayout from "../components/AuthLayout";
 
 function Register() {
     const navigate = useNavigate();
@@ -60,146 +60,162 @@ function Register() {
     };
 
     return (
-        <div className="container mt-5">
-            <div className="d-flex justify-content-end mb-2">
-                <ThemeToggle variant="secondary" />
+        <AuthLayout>
+
+            <div className="d-lg-none text-center mb-4">
+                <div
+                    className="rounded-circle bg-primary text-white mx-auto d-flex align-items-center justify-content-center mb-3 fw-bold fs-3"
+                    style={{ width: 64, height: 64 }}
+                >
+                    C
+                </div>
+                <h2 className="fw-bold text-primary mb-0">
+                    ContactHub
+                </h2>
             </div>
-            <div className="row justify-content-center">
-                <div className="col-md-6">
-                    <div className="card shadow">
-                        <div className="card-body p-4">
 
-                            <h2 className="text-center mb-2">
-                                Contact Management System
-                            </h2>
+            <div className="card shadow-lg border-0" style={{ maxWidth: 460, width: "100%" }}>
+                <div className="card-body p-4 p-md-5">
 
-                            <h4 className="text-center mb-4">
-                                Create Account
-                            </h4>
+                    <h4 className="fw-bold mb-1">
+                        Create your account
+                    </h4>
 
-                            {error && (
-                                <div className="alert alert-danger">
-                                    {error}
-                                </div>
-                            )}
+                    <p className="text-muted mb-4">
+                        Start organizing your contacts today.
+                    </p>
 
-                            {success && (
-                                <div className="alert alert-success">
-                                    {success}
-                                </div>
-                            )}
+                    {error && (
+                        <div className="alert alert-danger py-2">
+                            {error}
+                        </div>
+                    )}
 
-                            <form onSubmit={handleSubmit}>
+                    {success && (
+                        <div className="alert alert-success py-2">
+                            {success}
+                        </div>
+                    )}
 
-                                <div className="row">
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">
-                                            First Name
-                                        </label>
+                    <form onSubmit={handleSubmit}>
 
-                                        <input
-                                            type="text"
-                                            name="firstName"
-                                            className="form-control"
-                                            value={form.firstName}
-                                            onChange={handleChange}
-                                            maxLength="50"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="col-md-6 mb-3">
-                                        <label className="form-label">
-                                            Last Name
-                                        </label>
-
-                                        <input
-                                            type="text"
-                                            name="lastName"
-                                            className="form-control"
-                                            value={form.lastName}
-                                            onChange={handleChange}
-                                            maxLength="50"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="mb-3">
-                                    <label className="form-label">
-                                        Email
-                                    </label>
-
+                        <div className="row g-2">
+                            <div className="col-6">
+                                <div className="form-floating mb-3">
                                     <input
-                                        type="email"
-                                        name="email"
+                                        type="text"
+                                        id="firstName"
+                                        name="firstName"
                                         className="form-control"
-                                        value={form.email}
+                                        placeholder="First Name"
+                                        value={form.firstName}
                                         onChange={handleChange}
+                                        maxLength="50"
                                         required
                                     />
-                                </div>
-
-                                <div className="mb-3">
-                                    <label className="form-label">
-                                        Phone
+                                    <label htmlFor="firstName">
+                                        First Name
                                     </label>
-
-                                    <input
-                                        type="tel"
-                                        name="phone"
-                                        className="form-control"
-                                        value={form.phone}
-                                        onChange={handleChange}
-                                        maxLength="20"
-                                    />
                                 </div>
-
-                                <div className="mb-3">
-                                    <label className="form-label">
-                                        Password
-                                    </label>
-
-                                    <input
-                                        type="password"
-                                        name="password"
-                                        className="form-control"
-                                        value={form.password}
-                                        onChange={handleChange}
-                                        minLength="8"
-                                        maxLength="100"
-                                        required
-                                    />
-
-                                    <div className="form-text">
-                                        Password must be at least 8 characters.
-                                    </div>
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    className="btn btn-primary w-100"
-                                    disabled={loading}
-                                >
-                                    {loading
-                                        ? "Creating account..."
-                                        : "Create Account"}
-                                </button>
-
-                            </form>
-
-                            <div className="text-center mt-3">
-                                Already have an account?{" "}
-                                <Link to="/login">
-                                    Login
-                                </Link>
                             </div>
 
+                            <div className="col-6">
+                                <div className="form-floating mb-3">
+                                    <input
+                                        type="text"
+                                        id="lastName"
+                                        name="lastName"
+                                        className="form-control"
+                                        placeholder="Last Name"
+                                        value={form.lastName}
+                                        onChange={handleChange}
+                                        maxLength="50"
+                                        required
+                                    />
+                                    <label htmlFor="lastName">
+                                        Last Name
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+
+                        <div className="form-floating mb-3">
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                className="form-control"
+                                placeholder="Email"
+                                value={form.email}
+                                onChange={handleChange}
+                                required
+                            />
+                            <label htmlFor="email">
+                                Email
+                            </label>
+                        </div>
+
+                        <div className="form-floating mb-3">
+                            <input
+                                type="tel"
+                                id="phone"
+                                name="phone"
+                                className="form-control"
+                                placeholder="Phone"
+                                value={form.phone}
+                                onChange={handleChange}
+                                maxLength="20"
+                            />
+                            <label htmlFor="phone">
+                                Phone (optional)
+                            </label>
+                        </div>
+
+                        <div className="form-floating mb-1">
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                className="form-control"
+                                placeholder="Password"
+                                value={form.password}
+                                onChange={handleChange}
+                                minLength="8"
+                                maxLength="100"
+                                required
+                            />
+                            <label htmlFor="password">
+                                Password
+                            </label>
+                        </div>
+
+                        <div className="form-text mb-3">
+                            Password must be at least 8 characters.
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="btn btn-primary w-100 py-2 fw-semibold rounded-3"
+                            disabled={loading}
+                        >
+                            {loading ? "Creating account..." : "Create Account"}
+                        </button>
+
+                    </form>
+
                 </div>
             </div>
-        </div>
+
+            <div className="card shadow-sm border-0 mt-3 text-center" style={{ maxWidth: 460, width: "100%" }}>
+                <div className="card-body py-3">
+                    Already have an account?{" "}
+                    <Link to="/login" className="fw-semibold text-decoration-none">
+                        Login
+                    </Link>
+                </div>
+            </div>
+
+        </AuthLayout>
     );
 }
 
