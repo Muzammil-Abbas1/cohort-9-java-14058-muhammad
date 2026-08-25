@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import api from "../services/api";
+import Avatar from "./Avatar";
 
 const emptyForm = () => ({
     firstName: "",
@@ -302,6 +303,14 @@ function ContactFormModal({ show, contact, onClose, onSaved }) {
                             )}
 
                             {/* BASIC INFORMATION */}
+
+                            <div className="d-flex justify-content-center mb-4">
+                                <Avatar
+                                    firstName={form.firstName}
+                                    lastName={form.lastName}
+                                    size={72}
+                                />
+                            </div>
 
                             <div className="row">
                                 <div className="col-md-6 mb-3">

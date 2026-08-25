@@ -31,9 +31,11 @@ public class ContactController {
     // ================= GET ALL CONTACTS =================
 
     @GetMapping
-    public ResponseEntity<Page<Contact>> getContacts(Pageable pageable) {
+    public ResponseEntity<Page<Contact>> getContacts(
+            @RequestParam(required = false, defaultValue = "false") boolean favoritesOnly,
+            Pageable pageable) {
 
-        Page<Contact> contacts = contactService.getContacts(pageable);
+        Page<Contact> contacts = contactService.getContacts(pageable, favoritesOnly);
 
         return ResponseEntity.ok(contacts);
     }

@@ -11,6 +11,8 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
 
     Page<Contact> findByUserId(Long userId, Pageable pageable);
 
+    Page<Contact> findByUserIdAndFavoriteTrue(Long userId, Pageable pageable);
+
     @Query("""
         SELECT c FROM Contact c
         WHERE c.user.id = :userId

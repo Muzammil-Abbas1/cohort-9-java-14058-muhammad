@@ -52,16 +52,36 @@ class ContactControllerTest {
         Page<Contact> page =
                 new PageImpl<>(List.of(contact));
 
-        when(contactService.getContacts(pageable))
+        when(contactService.getContacts(pageable, false))
                 .thenReturn(page);
 
         ResponseEntity<Page<Contact>> response =
-                contactController.getContacts(pageable);
+                contactController.getContacts(false, pageable);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(page, response.getBody());
 
-        verify(contactService).getContacts(pageable);
+        verify(contactService).getContacts(pageable, false);
+    }
+
+    @Test
+    void getContacts_shouldReturnOnlyFavorites_whenFavoritesOnlyIsTrue() {
+        Pageable pageable = Pageable.unpaged();
+
+        Contact contact = new Contact();
+        Page<Contact> page =
+                new PageImpl<>(List.of(contact));
+
+        when(contactService.getContacts(pageable, true))
+                .thenReturn(page);
+
+        ResponseEntity<Page<Contact>> response =
+                contactController.getContacts(true, pageable);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(page, response.getBody());
+
+        verify(contactService).getContacts(pageable, true);
     }
 
     @Test

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
-import ThemeToggle from "../components/ThemeToggle";
+import AppShell from "../components/AppShell";
+import Avatar from "../components/Avatar";
 
 function Profile() {
     const navigate = useNavigate();
@@ -231,48 +232,9 @@ function Profile() {
     // ================= UI =================
 
     return (
-        <div className="container-fluid">
+        <AppShell active="profile" title="Profile" subtitle="Your account details.">
 
-            {/* ================= NAVBAR ================= */}
-
-            <nav className="navbar navbar-expand-lg navbar-dark bg-primary px-4">
-
-                <span className="navbar-brand">
-                    Contact Management System
-                </span>
-
-                <div className="ms-auto d-flex gap-2">
-
-                    <ThemeToggle />
-
-                    <button
-                        className="btn btn-outline-light"
-                        onClick={() => navigate("/dashboard")}
-                    >
-                        Dashboard
-                    </button>
-
-                    <button
-                        className="btn btn-light"
-                        onClick={handleLogout}
-                    >
-                        Logout
-                    </button>
-
-                </div>
-
-            </nav>
-
-            {/* ================= PROFILE ================= */}
-
-            <div
-                className="container mt-4"
-                style={{ maxWidth: "600px" }}
-            >
-
-                <h2 className="mb-4">
-                    My Profile
-                </h2>
+            <div style={{ maxWidth: "600px" }}>
 
                 {error && (
                     <div className="alert alert-danger">
@@ -314,6 +276,22 @@ function Profile() {
                     <div className="card shadow-sm">
 
                         <div className="card-body p-4">
+
+                            <div className="d-flex align-items-center gap-3 mb-4">
+                                <Avatar
+                                    firstName={user.firstName}
+                                    lastName={user.lastName}
+                                    size={64}
+                                />
+                                <div>
+                                    <h4 className="mb-0">
+                                        {user.firstName} {user.lastName}
+                                    </h4>
+                                    <p className="text-muted mb-0 small">
+                                        {user.email || user.phone}
+                                    </p>
+                                </div>
+                            </div>
 
                             <div className="mb-3">
                                 <strong>
@@ -534,7 +512,7 @@ function Profile() {
 
             )}
 
-        </div>
+        </AppShell>
     );
 }
 

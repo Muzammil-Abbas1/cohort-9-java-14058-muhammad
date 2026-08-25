@@ -12,7 +12,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,6 +45,36 @@ class ContactServiceTest {
 
         when(authUtil.getCurrentUser())
                 .thenReturn(currentUser);
+    }
+
+    @Test
+    void getContacts_shouldUseAllContacts_whenFavoritesOnlyIsFalse() {
+
+        Pageable pageable = Pageable.unpaged();
+        Page<Contact> page = new PageImpl<>(List.of(new Contact()));
+
+        when(contactRepository.findByUserId(1L, pageable))
+                .thenReturn(page);
+
+        Page<Contact> result = contactService.getContacts(pageable, false);
+
+        assertEquals(page, result);
+        verify(contactRepository, never()).findByUserIdAndFavoriteTrue(any(), any());
+    }
+
+    @Test
+    void getContacts_shouldUseFavoritesOnly_whenFavoritesOnlyIsTrue() {
+
+        Pageable pageable = Pageable.unpaged();
+        Page<Contact> page = new PageImpl<>(List.of(new Contact()));
+
+        when(contactRepository.findByUserIdAndFavoriteTrue(1L, pageable))
+                .thenReturn(page);
+
+        Page<Contact> result = contactService.getContacts(pageable, true);
+
+        assertEquals(page, result);
+        verify(contactRepository, never()).findByUserId(any(), any());
     }
 
     @Test

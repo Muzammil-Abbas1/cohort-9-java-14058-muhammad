@@ -78,9 +78,13 @@ public class ContactService {
 
     // ================= GET ALL CONTACTS =================
 
-    public Page<Contact> getContacts(Pageable pageable) {
+    public Page<Contact> getContacts(Pageable pageable, boolean favoritesOnly) {
 
         User user = authUtil.getCurrentUser();
+
+        if (favoritesOnly) {
+            return contactRepository.findByUserIdAndFavoriteTrue(user.getId(), pageable);
+        }
 
         return contactRepository.findByUserId(user.getId(), pageable);
     }
