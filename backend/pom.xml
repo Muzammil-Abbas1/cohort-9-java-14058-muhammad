@@ -144,6 +144,20 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+
+                    <!--
+                        On Windows, `mvnw.cmd spring-boot:run` forks a child JVM
+                        that does not reliably inherit env vars set via `setx`
+                        in the parent shell. Forward them explicitly so
+                        DB_URL/DB_USERNAME/DB_PASSWORD/JWT_SECRET resolve
+                        correctly regardless of platform.
+                    -->
+                    <environmentVariables>
+                        <DB_URL>${env.DB_URL}</DB_URL>
+                        <DB_USERNAME>${env.DB_USERNAME}</DB_USERNAME>
+                        <DB_PASSWORD>${env.DB_PASSWORD}</DB_PASSWORD>
+                        <JWT_SECRET>${env.JWT_SECRET}</JWT_SECRET>
+                    </environmentVariables>
                 </configuration>
             </plugin>
 

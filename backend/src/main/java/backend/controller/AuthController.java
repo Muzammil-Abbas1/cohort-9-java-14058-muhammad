@@ -12,6 +12,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -25,6 +26,9 @@ import java.util.Map;
 public class AuthController {
 
     private final UserService userService;
+
+    @Value("${cookie.secure:false}")
+    private boolean cookieSecure;
 
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(
@@ -54,7 +58,7 @@ public class AuthController {
 
             Cookie cookie = new Cookie("access_token", token);
             cookie.setHttpOnly(true);
-            cookie.setSecure(false); // localhost development
+            cookie.setSecure(cookieSecure);
             cookie.setPath("/");
             cookie.setMaxAge(60 * 60); // 1 hour
 
@@ -82,7 +86,7 @@ public class AuthController {
 
     Cookie cookie = new Cookie("access_token", null);
     cookie.setHttpOnly(true);
-    cookie.setSecure(false);
+    cookie.setSecure(cookieSecure);
     cookie.setPath("/");
     cookie.setMaxAge(0);
 

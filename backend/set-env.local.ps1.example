@@ -1,0 +1,7 @@
+# Copy this file to set-env.local.ps1 (gitignored) and fill in your real values.
+# Then run .\run-dev.ps1 to start the backend.
+
+$env:DB_URL = "jdbc:mysql://localhost:3306/contact_management_db"
+$env:DB_USERNAME = "your_mysql_username"
+$env:DB_PASSWORD = "your_mysql_password"
+$env:JWT_SECRET = "replace-with-a-long-random-secret"

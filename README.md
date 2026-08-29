@@ -28,19 +28,21 @@ frontend/   React (Vite) single-page app
 
 ## Environment Variables
 
-The backend reads the following at startup. All except `JWT_SECRET` have working local defaults, so they're optional for local development.
+The backend reads the following at startup. The first four are required — there is no built-in fallback, so the app will not start without them.
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `JWT_SECRET` | Yes | *(none — app fails to start without it)* | HMAC signing key for JWT tokens. Use a long random string in any real environment. |
-| `DB_URL` | No | `jdbc:mysql://localhost:3306/contact_management_db` | JDBC connection URL |
-| `DB_USERNAME` | No | `root` | MySQL username |
-| `DB_PASSWORD` | No | `7879` | MySQL password |
+| Variable | Required | Description |
+|---|---|---|
+| `JWT_SECRET` | Yes | HMAC signing key for JWT tokens. Use a long random string in any real environment. |
+| `DB_URL` | Yes | JDBC connection URL, e.g. `jdbc:mysql://localhost:3306/contact_management_db` |
+| `DB_USERNAME` | Yes | MySQL username |
+| `DB_PASSWORD` | Yes | MySQL password |
+| `COOKIE_SECURE` | No (default `false`) | Set to `true` when serving over HTTPS (e.g. production) so the auth cookie is marked `Secure`. Leave unset for local HTTP development. |
 
 See [`.env.example`](.env.example) for a copyable template. Spring Boot does not load `.env` files automatically — set these as real OS/shell environment variables (or export them) before running the backend, e.g.:
 
 ```bash
 export JWT_SECRET="replace-with-a-long-random-secret"
+export DB_URL="jdbc:mysql://localhost:3306/contact_management_db"
 export DB_USERNAME=root
 export DB_PASSWORD=your_mysql_password
 ```
