@@ -28,6 +28,7 @@ function ContactFormModal({ show, contact, onClose, onSaved }) {
     const [saving, setSaving] = useState(false);
 
     const modalRef = useRef(null);
+    const savingRef = useRef(false);
 
     // ================= POPULATE / RESET FORM =================
 
@@ -101,7 +102,7 @@ function ContactFormModal({ show, contact, onClose, onSaved }) {
 
         const handleKeyDown = (event) => {
             if (event.key === "Escape") {
-                if (!saving) {
+                if (!savingRef.current) {
                     onClose();
                 }
                 return;
@@ -216,6 +217,7 @@ function ContactFormModal({ show, contact, onClose, onSaved }) {
         }
 
         setSaving(true);
+        savingRef.current = true;
 
         try {
             const payload = {
@@ -255,6 +257,7 @@ function ContactFormModal({ show, contact, onClose, onSaved }) {
                 setError(`Failed to ${isEditMode ? "update" : "create"} contact.`);
             }
         } finally {
+            savingRef.current = false;
             setSaving(false);
         }
     };

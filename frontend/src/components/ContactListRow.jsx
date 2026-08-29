@@ -7,11 +7,20 @@ function ContactListRow({ contact, onClick, onToggleFavorite }) {
         contact.title ||
         "";
 
+    const handleRowKeyDown = (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onClick();
+        }
+    };
+
     return (
-        <button
-            type="button"
+        <div
+            role="button"
+            tabIndex={0}
             className="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3"
             onClick={onClick}
+            onKeyDown={handleRowKeyDown}
         >
             <Avatar
                 firstName={contact.firstName}
@@ -30,20 +39,12 @@ function ContactListRow({ contact, onClick, onToggleFavorite }) {
                 )}
             </div>
 
-            <span
-                role="button"
-                tabIndex={0}
-                className="fs-5 flex-shrink-0"
+            <button
+                type="button"
+                className="btn p-0 border-0 bg-transparent fs-5 flex-shrink-0"
                 onClick={(e) => {
                     e.stopPropagation();
                     onToggleFavorite();
-                }}
-                onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        onToggleFavorite();
-                    }
                 }}
                 aria-label={
                     contact.favorite ? "Remove from favorites" : "Add to favorites"
@@ -53,8 +54,8 @@ function ContactListRow({ contact, onClick, onToggleFavorite }) {
                 }
             >
                 {contact.favorite ? "⭐" : "☆"}
-            </span>
-        </button>
+            </button>
+        </div>
     );
 }
 

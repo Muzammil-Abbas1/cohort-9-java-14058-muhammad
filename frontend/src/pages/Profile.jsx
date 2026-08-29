@@ -24,6 +24,14 @@ function Profile() {
 
     const modalRef = useRef(null);
     const changePasswordButtonRef = useRef(null);
+    const autoCloseTimerRef = useRef(null);
+
+    const clearAutoCloseTimer = () => {
+        if (autoCloseTimerRef.current) {
+            clearTimeout(autoCloseTimerRef.current);
+            autoCloseTimerRef.current = null;
+        }
+    };
 
     // ================= LOAD PROFILE =================
 
@@ -62,6 +70,10 @@ function Profile() {
         loadProfile();
     }, []);
 
+    useEffect(() => {
+        return () => clearAutoCloseTimer();
+    }, []);
+
     // ================= LOGOUT =================
 
     const handleLogout = async () => {
@@ -88,6 +100,8 @@ function Profile() {
     };
 
     const openModal = () => {
+        clearAutoCloseTimer();
+
         setPasswordForm({
             oldPassword: "",
             newPassword: "",
@@ -100,6 +114,7 @@ function Profile() {
 
     const closeModal = () => {
         if (!saving) {
+            clearAutoCloseTimer();
             setShowModal(false);
         }
     };
@@ -188,7 +203,9 @@ function Profile() {
                 newPassword: "",
             });
 
-            setTimeout(() => {
+            clearAutoCloseTimer();
+            autoCloseTimerRef.current = setTimeout(() => {
+                autoCloseTimerRef.current = null;
                 setShowModal(false);
             }, 1200);
 

@@ -4,10 +4,15 @@ import { ThemeContext } from "./theme-context.js";
 const STORAGE_KEY = "cms-theme";
 
 function getInitialTheme() {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
 
-    if (stored === "light" || stored === "dark") {
-        return stored;
+        if (stored === "light" || stored === "dark") {
+            return stored;
+        }
+    } catch {
+        // Storage access blocked (privacy settings, sandboxed context, etc.)
+        // -- fall through to the system preference below.
     }
 
     return window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -20,7 +25,13 @@ export function ThemeProvider({ children }) {
 
     useEffect(() => {
         document.documentElement.setAttribute("data-bs-theme", theme);
-        localStorage.setItem(STORAGE_KEY, theme);
+
+        try {
+            localStorage.setItem(STORAGE_KEY, theme);
+        } catch {
+            // Persistence failed -- the active theme still works for
+            // this session, it just won't be remembered next time.
+        }
     }, [theme]);
 
     const toggleTheme = () => {

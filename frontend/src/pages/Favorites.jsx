@@ -74,6 +74,12 @@ function Favorites() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page]);
 
+    useEffect(() => {
+        if (totalPages > 0 && page >= totalPages) {
+            setPage(totalPages - 1);
+        }
+    }, [page, totalPages]);
+
     const handleToggleFavorite = async (contact) => {
         try {
             await api.patch(`/contacts/${contact.id}/favorite`);
