@@ -3,8 +3,6 @@ package backend.security;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class TokenInvalidationRegistryTest {
@@ -17,66 +15,47 @@ class TokenInvalidationRegistryTest {
     }
 
     @Test
-    void isTokenInvalidated_shouldReturnFalse_whenUserHasNoInvalidation() {
-        assertFalse(registry.isTokenInvalidated(1L, Instant.now()));
+    void getCurrentVersion_shouldReturnZero_forUserWithNoHistory() {
+        assertEquals(0, registry.getCurrentVersion(1L));
     }
 
     @Test
-    void isTokenInvalidated_shouldReturnTrue_whenTokenIssuedBeforeCutoff() {
-        Instant cutoff = Instant.now();
-        Instant tokenIssuedAt = cutoff.minusSeconds(10);
-
-        registry.invalidateTokensBefore(1L, cutoff);
-
-        assertTrue(registry.isTokenInvalidated(1L, tokenIssuedAt));
+    void incrementVersion_shouldReturnOne_onFirstCall() {
+        assertEquals(1, registry.incrementVersion(1L));
     }
 
     @Test
-    void isTokenInvalidated_shouldReturnTrue_whenTokenIssuedExactlyAtCutoff() {
-        Instant cutoff = Instant.now();
+    void incrementVersion_shouldKeepIncrementing() {
+        registry.incrementVersion(1L);
+        registry.incrementVersion(1L);
 
-        registry.invalidateTokensBefore(1L, cutoff);
-
-        assertTrue(registry.isTokenInvalidated(1L, cutoff));
+        assertEquals(3, registry.incrementVersion(1L));
     }
 
     @Test
-    void isTokenInvalidated_shouldReturnFalse_whenTokenIssuedAfterCutoff() {
-        Instant cutoff = Instant.now();
-        Instant tokenIssuedAt = cutoff.plusSeconds(10);
+    void incrementVersion_shouldNotAffectOtherUsers() {
+        registry.incrementVersion(1L);
 
-        registry.invalidateTokensBefore(1L, cutoff);
-
-        assertFalse(registry.isTokenInvalidated(1L, tokenIssuedAt));
+        assertEquals(0, registry.getCurrentVersion(2L));
     }
 
     @Test
-    void isTokenInvalidated_shouldNotAffectOtherUsers() {
-        registry.invalidateTokensBefore(1L, Instant.now());
+    void isTokenInvalidated_shouldReturnFalse_whenVersionMatchesCurrent() {
+        int version = registry.incrementVersion(1L);
 
-        assertFalse(registry.isTokenInvalidated(2L, Instant.now().minusSeconds(10)));
+        assertFalse(registry.isTokenInvalidated(1L, version));
     }
 
     @Test
-    void forgetEntriesOlderThan_shouldRemoveStaleEntries() {
-        Instant oldCutoff = Instant.now().minusSeconds(100);
-        registry.invalidateTokensBefore(1L, oldCutoff);
+    void isTokenInvalidated_shouldReturnTrue_whenVersionIsOlderThanCurrent() {
+        int oldVersion = registry.getCurrentVersion(1L);
+        registry.incrementVersion(1L);
 
-        registry.forgetEntriesOlderThan(Instant.now().minusSeconds(50));
-
-        // Entry removed, so a previously-invalidated token now reads as valid
-        // again -- correct, since it would already have expired naturally
-        // by the time an entry is old enough to be swept.
-        assertFalse(registry.isTokenInvalidated(1L, oldCutoff.minusSeconds(1)));
+        assertTrue(registry.isTokenInvalidated(1L, oldVersion));
     }
 
     @Test
-    void forgetEntriesOlderThan_shouldKeepRecentEntries() {
-        Instant recentCutoff = Instant.now();
-        registry.invalidateTokensBefore(1L, recentCutoff);
-
-        registry.forgetEntriesOlderThan(Instant.now().minusSeconds(50));
-
-        assertTrue(registry.isTokenInvalidated(1L, recentCutoff.minusSeconds(1)));
+    void isTokenInvalidated_shouldReturnFalse_forUserWithNoHistory_whenTokenVersionIsZero() {
+        assertFalse(registry.isTokenInvalidated(1L, 0));
     }
 }

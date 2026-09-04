@@ -18,8 +18,6 @@ import org.springframework.stereotype.Service;
 import backend.security.AuthUtil;
 import backend.security.TokenInvalidationRegistry;
 
-import java.time.Instant;
-
 
 @Service
 @RequiredArgsConstructor
@@ -92,7 +90,9 @@ public class UserService {
         logger.info("User logged in: {}",
         request.getEmailOrPhone());
 
-        return jwtUtil.generateToken(user.getId().toString());
+        int tokenVersion = tokenInvalidationRegistry.getCurrentVersion(user.getId());
+
+        return jwtUtil.generateToken(user.getId().toString(), tokenVersion);
      }
 
     // ================= CURRENT USER =================
@@ -139,17 +139,8 @@ public class UserService {
 
         userRepository.save(user);
 
-        // A 1-second safety margin avoids a razor-thin race where the new
-        // token generated a few lines below could end up timestamped at or
-        // before the cutoff (JWT timestamps only carry millisecond
-        // precision, so back-to-back Instant.now() calls could collide).
-        Instant cutoff = Instant.now().minusSeconds(1);
-
-        tokenInvalidationRegistry.invalidateTokensBefore(user.getId(), cutoff);
-        tokenInvalidationRegistry.forgetEntriesOlderThan(
-                cutoff.minusMillis(jwtUtil.getExpirationTimeMillis()));
-
-        String newToken = jwtUtil.generateToken(user.getId().toString());
+        int newVersion = tokenInvalidationRegistry.incrementVersion(user.getId());
+        String newToken = jwtUtil.generateToken(user.getId().toString(), newVersion);
 
            logger.info("Password changed successfully for user id={}",
             user.getId());

@@ -17,12 +17,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.Instant;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -137,7 +135,9 @@ class UserServiceTest {
         when(passwordEncoder.matches("password123", "encodedPassword"))
                 .thenReturn(true);
 
-       when(jwtUtil.generateToken(user.getId().toString()))
+        when(tokenInvalidationRegistry.getCurrentVersion(1L)).thenReturn(0);
+
+       when(jwtUtil.generateToken(user.getId().toString(), 0))
         .thenReturn("fake-jwt-token");
 
         String token = userService.login(loginRequest);
@@ -190,7 +190,9 @@ class UserServiceTest {
         when(passwordEncoder.encode("newPassword456"))
                 .thenReturn("newEncodedPassword");
 
-        when(jwtUtil.generateToken("1")).thenReturn("fresh-jwt-token");
+        when(tokenInvalidationRegistry.incrementVersion(1L)).thenReturn(1);
+
+        when(jwtUtil.generateToken("1", 1)).thenReturn("fresh-jwt-token");
 
         String result = userService.changePassword(request);
 
@@ -198,10 +200,7 @@ class UserServiceTest {
         assertEquals("newEncodedPassword", user.getPassword());
 
         verify(userRepository).save(user);
-        verify(tokenInvalidationRegistry)
-                .invalidateTokensBefore(eq(1L), any(Instant.class));
-        verify(tokenInvalidationRegistry)
-                .forgetEntriesOlderThan(any(Instant.class));
+        verify(tokenInvalidationRegistry).incrementVersion(1L);
     }
 
     @Test
@@ -226,7 +225,6 @@ class UserServiceTest {
         );
 
         verify(userRepository, never()).save(any(User.class));
-        verify(tokenInvalidationRegistry, never())
-                .invalidateTokensBefore(any(), any());
+        verify(tokenInvalidationRegistry, never()).incrementVersion(any());
     }
 }

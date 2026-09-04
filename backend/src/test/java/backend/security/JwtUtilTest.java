@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
-import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,7 +24,7 @@ class JwtUtilTest {
 
     @Test
     void generateToken_shouldCreateValidToken() {
-        String token = jwtUtil.generateToken("ali@example.com");
+        String token = jwtUtil.generateToken("ali@example.com", 0);
 
         assertNotNull(token);
         assertFalse(token.isBlank());
@@ -33,7 +32,7 @@ class JwtUtilTest {
 
     @Test
     void extractSubject_shouldReturnSubject() {
-        String token = jwtUtil.generateToken("ali@example.com");
+        String token = jwtUtil.generateToken("ali@example.com", 0);
 
         String subject = jwtUtil.extractSubject(token);
 
@@ -42,7 +41,7 @@ class JwtUtilTest {
 
     @Test
     void isTokenValid_shouldReturnTrueForValidToken() {
-        String token = jwtUtil.generateToken("ali@example.com");
+        String token = jwtUtil.generateToken("ali@example.com", 0);
 
         assertTrue(jwtUtil.isTokenValid(token));
     }
@@ -53,20 +52,16 @@ class JwtUtilTest {
     }
 
     @Test
-    void extractIssuedAt_shouldReturnRecentInstant() {
-        Instant before = Instant.now().minusSeconds(5);
+    void extractTokenVersion_shouldReturnEmbeddedVersion() {
+        String token = jwtUtil.generateToken("ali@example.com", 3);
 
-        String token = jwtUtil.generateToken("ali@example.com");
-
-        Instant issuedAt = jwtUtil.extractIssuedAt(token);
-        Instant after = Instant.now().plusSeconds(5);
-
-        assertTrue(issuedAt.isAfter(before));
-        assertTrue(issuedAt.isBefore(after));
+        assertEquals(3, jwtUtil.extractTokenVersion(token));
     }
 
     @Test
-    void getExpirationTimeMillis_shouldReturnTenHours() {
-        assertEquals(10L * 60 * 60 * 1000, jwtUtil.getExpirationTimeMillis());
+    void extractTokenVersion_shouldReturnZero_whenVersionIsZero() {
+        String token = jwtUtil.generateToken("ali@example.com", 0);
+
+        assertEquals(0, jwtUtil.extractTokenVersion(token));
     }
 }

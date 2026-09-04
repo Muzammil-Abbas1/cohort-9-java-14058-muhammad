@@ -26,6 +26,11 @@ function FavoriteContactCard({ contact, onClick, onToggleFavorite }) {
                         e.stopPropagation();
                         onToggleFavorite();
                     }}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                            e.stopPropagation();
+                        }
+                    }}
                     aria-label="Remove from favorites"
                     title="Remove from favorites"
                 >

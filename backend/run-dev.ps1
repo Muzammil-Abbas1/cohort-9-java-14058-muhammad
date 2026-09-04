@@ -4,6 +4,8 @@
 # persistent Windows/VS Code environment variables, which don't always
 # reach a freshly-opened terminal reliably.
 
+$ErrorActionPreference = "Stop"
+
 $envFile = Join-Path $PSScriptRoot "set-env.local.ps1"
 
 if (-not (Test-Path $envFile)) {
@@ -11,6 +13,12 @@ if (-not (Test-Path $envFile)) {
     exit 1
 }
 
-. $envFile
+try {
+    . $envFile
+} catch {
+    Write-Error "Failed to load $envFile -- $_"
+    exit 1
+}
 
 & "$PSScriptRoot\mvnw.cmd" spring-boot:run
+exit $LASTEXITCODE

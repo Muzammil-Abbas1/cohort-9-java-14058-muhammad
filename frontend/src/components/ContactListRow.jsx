@@ -46,6 +46,11 @@ function ContactListRow({ contact, onClick, onToggleFavorite }) {
                     e.stopPropagation();
                     onToggleFavorite();
                 }}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.stopPropagation();
+                    }
+                }}
                 aria-label={
                     contact.favorite ? "Remove from favorites" : "Add to favorites"
                 }

@@ -57,7 +57,7 @@ public class JwtFilter extends OncePerRequestFilter {
             Long userId = Long.valueOf(jwtUtil.extractSubject(token));
             return tokenInvalidationRegistry.isTokenInvalidated(
                     userId,
-                    jwtUtil.extractIssuedAt(token)
+                    jwtUtil.extractTokenVersion(token)
             );
         } catch (NumberFormatException e) {
             return true;

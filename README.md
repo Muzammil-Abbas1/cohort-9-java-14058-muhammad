@@ -36,7 +36,7 @@ The backend reads the following at startup. The first four are required — ther
 | `DB_URL` | Yes | JDBC connection URL, e.g. `jdbc:mysql://localhost:3306/contact_management_db` |
 | `DB_USERNAME` | Yes | MySQL username |
 | `DB_PASSWORD` | Yes | MySQL password |
-| `COOKIE_SECURE` | No (default `false`) | Set to `true` when serving over HTTPS (e.g. production) so the auth cookie is marked `Secure`. Leave unset for local HTTP development. |
+| `COOKIE_SECURE` | **Required `true` in production** (default `false`) | Marks the auth cookie `Secure`, so browsers only send it over HTTPS. The `false` default exists only so local HTTP development works out of the box -- any real (HTTPS) deployment must explicitly set this to `true`. |
 
 See [`.env.example`](.env.example) for a copyable template. Spring Boot does not load `.env` files automatically — set these as real OS/shell environment variables (or export them) before running the backend, e.g.:
 

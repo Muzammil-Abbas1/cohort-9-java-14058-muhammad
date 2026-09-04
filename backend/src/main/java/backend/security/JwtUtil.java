@@ -1,5 +1,6 @@
 package backend.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -13,6 +14,8 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
+
+    private static final String VERSION_CLAIM = "tokenVersion";
 
     @Value("${jwt.secret}")
     private String secret;
@@ -28,7 +31,7 @@ public class JwtUtil {
         );
     }
 
-    public String generateToken(String subject) {
+    public String generateToken(String subject, int tokenVersion) {
 
         Instant now = Instant.now();
 
@@ -39,33 +42,28 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .subject(subject)
+                .claim(VERSION_CLAIM, tokenVersion)
                 .issuedAt(issuedAt)
                 .expiration(expiration)
                 .signWith(key)
                 .compact();
     }
 
+    private Claims parseClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
     public String extractSubject(String token) {
-        return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+        return parseClaims(token).getSubject();
     }
 
-    public Instant extractIssuedAt(String token) {
-        return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getIssuedAt()
-                .toInstant();
-    }
-
-    public long getExpirationTimeMillis() {
-        return EXPIRATION_TIME;
+    public int extractTokenVersion(String token) {
+        Object version = parseClaims(token).get(VERSION_CLAIM);
+        return version == null ? 0 : ((Number) version).intValue();
     }
 
     public boolean isTokenValid(String token) {
