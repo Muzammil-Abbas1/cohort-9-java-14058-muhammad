@@ -1,10 +1,14 @@
 package backend.service;
 
+import backend.dto.ChangePasswordRequest;
 import backend.dto.LoginRequest;
 import backend.dto.RegisterRequest;
 import backend.entity.User;
+import backend.exception.BadRequestException;
 import backend.repository.UserRepository;
+import backend.security.AuthUtil;
 import backend.security.JwtUtil;
+import backend.security.TokenInvalidationRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,10 +17,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,6 +36,12 @@ class UserServiceTest {
 
     @Mock
     private JwtUtil jwtUtil;
+
+    @Mock
+    private AuthUtil authUtil;
+
+    @Mock
+    private TokenInvalidationRegistry tokenInvalidationRegistry;
 
     @InjectMocks
     private UserService userService;
@@ -157,5 +169,64 @@ class UserServiceTest {
         );
 
         assertEquals("Invalid password", exception.getMessage());
+    }
+
+    @Test
+    void changePassword_shouldInvalidateOldTokens_andReturnFreshToken() {
+
+        User user = new User();
+        user.setId(1L);
+        user.setPassword("oldEncodedPassword");
+
+        ChangePasswordRequest request = new ChangePasswordRequest();
+        request.setOldPassword("oldPassword123");
+        request.setNewPassword("newPassword456");
+
+        when(authUtil.getCurrentUser()).thenReturn(user);
+
+        when(passwordEncoder.matches("oldPassword123", "oldEncodedPassword"))
+                .thenReturn(true);
+
+        when(passwordEncoder.encode("newPassword456"))
+                .thenReturn("newEncodedPassword");
+
+        when(jwtUtil.generateToken("1")).thenReturn("fresh-jwt-token");
+
+        String result = userService.changePassword(request);
+
+        assertEquals("fresh-jwt-token", result);
+        assertEquals("newEncodedPassword", user.getPassword());
+
+        verify(userRepository).save(user);
+        verify(tokenInvalidationRegistry)
+                .invalidateTokensBefore(eq(1L), any(Instant.class));
+        verify(tokenInvalidationRegistry)
+                .forgetEntriesOlderThan(any(Instant.class));
+    }
+
+    @Test
+    void changePassword_shouldThrowException_whenOldPasswordIsWrong() {
+
+        User user = new User();
+        user.setId(1L);
+        user.setPassword("oldEncodedPassword");
+
+        ChangePasswordRequest request = new ChangePasswordRequest();
+        request.setOldPassword("wrongOldPassword");
+        request.setNewPassword("newPassword456");
+
+        when(authUtil.getCurrentUser()).thenReturn(user);
+
+        when(passwordEncoder.matches("wrongOldPassword", "oldEncodedPassword"))
+                .thenReturn(false);
+
+        assertThrows(
+                BadRequestException.class,
+                () -> userService.changePassword(request)
+        );
+
+        verify(userRepository, never()).save(any(User.class));
+        verify(tokenInvalidationRegistry, never())
+                .invalidateTokensBefore(any(), any());
     }
 }

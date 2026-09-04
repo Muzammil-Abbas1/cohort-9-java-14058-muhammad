@@ -54,6 +54,20 @@ public class JwtUtil {
                 .getSubject();
     }
 
+    public Instant extractIssuedAt(String token) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getIssuedAt()
+                .toInstant();
+    }
+
+    public long getExpirationTimeMillis() {
+        return EXPIRATION_TIME;
+    }
+
     public boolean isTokenValid(String token) {
         try {
             extractSubject(token);

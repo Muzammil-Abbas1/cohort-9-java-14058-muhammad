@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -49,5 +50,23 @@ class JwtUtilTest {
     @Test
     void isTokenValid_shouldReturnFalseForInvalidToken() {
         assertFalse(jwtUtil.isTokenValid("invalid-token"));
+    }
+
+    @Test
+    void extractIssuedAt_shouldReturnRecentInstant() {
+        Instant before = Instant.now().minusSeconds(5);
+
+        String token = jwtUtil.generateToken("ali@example.com");
+
+        Instant issuedAt = jwtUtil.extractIssuedAt(token);
+        Instant after = Instant.now().plusSeconds(5);
+
+        assertTrue(issuedAt.isAfter(before));
+        assertTrue(issuedAt.isBefore(after));
+    }
+
+    @Test
+    void getExpirationTimeMillis_shouldReturnTenHours() {
+        assertEquals(10L * 60 * 60 * 1000, jwtUtil.getExpirationTimeMillis());
     }
 }

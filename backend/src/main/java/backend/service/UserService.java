@@ -16,6 +16,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import backend.security.AuthUtil;
+import backend.security.TokenInvalidationRegistry;
+
+import java.time.Instant;
 
 
 @Service
@@ -29,6 +32,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthUtil authUtil;
+    private final TokenInvalidationRegistry tokenInvalidationRegistry;
 
     // ================= REGISTER =================
 
@@ -109,7 +113,14 @@ public class UserService {
 
     // ================= CHANGE PASSWORD =================
 
-    public void changePassword(ChangePasswordRequest request) {
+    /**
+     * Changes the password and invalidates every token issued before now,
+     * so a stolen/old session cookie stops working. A fresh token is
+     * generated and returned so the caller's own current session -- the one
+     * making this very request -- keeps working without being logged out
+     * by its own password change.
+     */
+    public String changePassword(ChangePasswordRequest request) {
 
          User user = authUtil.getCurrentUser();
 
@@ -128,7 +139,21 @@ public class UserService {
 
         userRepository.save(user);
 
+        // A 1-second safety margin avoids a razor-thin race where the new
+        // token generated a few lines below could end up timestamped at or
+        // before the cutoff (JWT timestamps only carry millisecond
+        // precision, so back-to-back Instant.now() calls could collide).
+        Instant cutoff = Instant.now().minusSeconds(1);
+
+        tokenInvalidationRegistry.invalidateTokensBefore(user.getId(), cutoff);
+        tokenInvalidationRegistry.forgetEntriesOlderThan(
+                cutoff.minusMillis(jwtUtil.getExpirationTimeMillis()));
+
+        String newToken = jwtUtil.generateToken(user.getId().toString());
+
            logger.info("Password changed successfully for user id={}",
             user.getId());
-    }  
+
+        return newToken;
+    }
 }

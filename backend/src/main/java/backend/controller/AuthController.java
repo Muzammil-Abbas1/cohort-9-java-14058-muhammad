@@ -118,9 +118,18 @@ public class AuthController {
 
     @PutMapping("/change-password")
     public ResponseEntity<String> changePassword(
-            @Valid @RequestBody ChangePasswordRequest request) {
+            @Valid @RequestBody ChangePasswordRequest request,
+            HttpServletResponse response) {
 
-        userService.changePassword(request);
+        String newToken = userService.changePassword(request);
+
+        Cookie cookie = new Cookie("access_token", newToken);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(cookieSecure);
+        cookie.setPath("/");
+        cookie.setMaxAge(60 * 60); // 1 hour
+
+        response.addCookie(cookie);
 
         return ResponseEntity.ok(
                 "Password changed successfully"

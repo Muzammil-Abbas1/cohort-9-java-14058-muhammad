@@ -18,9 +18,11 @@ import java.util.Collections;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final TokenInvalidationRegistry tokenInvalidationRegistry;
 
-    public JwtFilter(JwtUtil jwtUtil) {
+    public JwtFilter(JwtUtil jwtUtil, TokenInvalidationRegistry tokenInvalidationRegistry) {
         this.jwtUtil = jwtUtil;
+        this.tokenInvalidationRegistry = tokenInvalidationRegistry;
     }
 
     @Override
@@ -32,7 +34,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = getTokenFromCookie(request);
 
-        if (token != null && jwtUtil.isTokenValid(token)) {
+        if (token != null && jwtUtil.isTokenValid(token) && !isInvalidated(token)) {
 
             String subject = jwtUtil.extractSubject(token);
 
@@ -48,6 +50,18 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isInvalidated(String token) {
+        try {
+            Long userId = Long.valueOf(jwtUtil.extractSubject(token));
+            return tokenInvalidationRegistry.isTokenInvalidated(
+                    userId,
+                    jwtUtil.extractIssuedAt(token)
+            );
+        } catch (NumberFormatException e) {
+            return true;
+        }
     }
 
     private String getTokenFromCookie(HttpServletRequest request) {

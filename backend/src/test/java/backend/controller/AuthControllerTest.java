@@ -7,6 +7,7 @@ import backend.exception.BadRequestException;
 import backend.exception.ConflictException;
 import backend.exception.ResourceNotFoundException;
 import backend.security.JwtUtil;
+import backend.security.TokenInvalidationRegistry;
 import backend.service.UserService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,6 +47,13 @@ class AuthControllerTest {
      */
     @MockitoBean
     private JwtUtil jwtUtil;
+
+    /*
+     * JwtFilter also requires TokenInvalidationRegistry -- same reason
+     * as the JwtUtil mock above.
+     */
+    @MockitoBean
+    private TokenInvalidationRegistry tokenInvalidationRegistry;
 
 
     // =========================================================
